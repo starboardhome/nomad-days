@@ -65,6 +65,14 @@ export const saveStay = async (db: Db, stay: StayRecord): Promise<void> => {
   await writeStay(db, StayRecordSchema.parse(stay));
 };
 
+/** Save several stays atomically (e.g. a new trip plus closing the previous one) */
+export const saveStays = async (db: Db, stays: readonly StayRecord[]): Promise<void> => {
+  const valid = stays.map((s) => StayRecordSchema.parse(s));
+  await db.withTransactionAsync(async () => {
+    for (const s of valid) await writeStay(db, s);
+  });
+};
+
 export const deleteStay = async (db: Db, id: string): Promise<void> => {
   await db.runAsync('DELETE FROM stays WHERE id = ?', [id]);
 };

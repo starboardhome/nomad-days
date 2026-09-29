@@ -12,6 +12,7 @@ import {
   saveCustomJurisdiction,
   saveProfile,
   saveStay,
+  saveStays,
 } from '../repo';
 import { nodeDb } from './nodeDb';
 
@@ -81,6 +82,15 @@ describe('repo', () => {
     ]);
     await deleteStay(db, 'a');
     assert.equal((await listStays(db)).length, 1);
+  });
+
+  it('saves several stays atomically', async () => {
+    await saveStays(db, [
+      { id: 'x', country: 'FR', entry: '2026-06-01' },
+      { id: 'y', country: 'DE', entry: '2026-06-05' },
+    ]);
+    await assert.rejects(saveStays(db, [{ id: 'z', country: 'ES', entry: '2026-07-01' }, { id: '', country: 'ES', entry: 'bad' }]));
+    assert.deepEqual((await listStays(db)).map((s) => s.id), ['y', 'x']);
   });
 
   it('rejects a stay that ends before it starts', async () => {
