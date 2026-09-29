@@ -13,6 +13,16 @@ Nomad Days has no server, no accounts, no analytics and no crash reporting. Ever
 - `openAppDatabase()` refuses to run if SQLCipher isn't compiled in, so it never falls back to a plaintext database.
 - If the key is missing, for example when app data has been restored onto another phone, the old file can't be read. It is replaced with an empty database and `wasReset: true` is returned, so the UI can offer to restore a backup.
 
+## Reminders
+
+Reminders are local notifications, scheduled on the device by a small module in `modules/local-reminders`:
+- **Android:** AndroidX WorkManager.
+- **iOS:** `UNUserNotificationCenter`.
+
+There is no push service, no Firebase and no network use. The app deliberately doesn't use `expo-notifications`, because on Android it bundles `firebase-messaging`, which F-Droid rejects. The **Native build** CI workflow fails if any `com.google.firebase`, `com.google.android.gms` or Play Services dependency appears in the Android build.
+
+Reminder text can show a region name and dates on the lock screen. They are only scheduled while reminders are switched on in Settings.
+
 ## Encrypted backups (`.nomadbackup`)
 
 A JSON envelope looks like this:

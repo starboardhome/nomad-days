@@ -26,6 +26,11 @@ export const MIGRATIONS: readonly string[] = [
      id TEXT PRIMARY KEY,
      json TEXT NOT NULL
    );`,
+  // v2: app settings (reminder preferences) as one JSON document
+  `CREATE TABLE settings (
+     key TEXT PRIMARY KEY,
+     value TEXT NOT NULL
+   );`,
 ];
 
 export const schemaVersion = async (db: Db): Promise<number> =>

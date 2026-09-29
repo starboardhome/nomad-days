@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, it } from 'node:test';
-import type { AppData } from '../../data/schema';
+import { defaultSettings, type AppData } from '../../data/schema';
 import { MIGRATIONS, migrate, schemaVersion } from '../migrations';
 import {
   deleteStay,
@@ -11,6 +11,8 @@ import {
   replaceAppData,
   saveCustomJurisdiction,
   saveProfile,
+  getSettings,
+  saveSettings,
   saveStay,
   saveStays,
 } from '../repo';
@@ -43,6 +45,16 @@ describe('migrations', () => {
     await migrate(db);
     await migrate(db);
     assert.equal(await schemaVersion(db), MIGRATIONS.length);
+  });
+
+  it('upgrades a v1 database without losing data', async () => {
+    const db = nodeDb();
+    await db.execAsync(MIGRATIONS[0]);
+    await db.execAsync('PRAGMA user_version = 1');
+    await saveStay(db, { id: 'kept', country: 'FR', entry: '2025-01-01' });
+    await migrate(db);
+    assert.deepEqual((await listStays(db)).map((s) => s.id), ['kept']);
+    assert.deepEqual(await getSettings(db), defaultSettings());
   });
 
   it('refuses a database from a newer app version', async () => {
@@ -97,6 +109,12 @@ describe('repo', () => {
     await assert.rejects(saveStay(db, { id: 'x', country: 'FR', entry: '2026-06-10', exit: '2026-06-01' }), /before entry/);
   });
 
+  it('saves settings and validates them', async () => {
+    await saveSettings(db, { reminders: { enabled: true, leadDays: [14, 3], hour: 8 } });
+    assert.deepEqual(await getSettings(db), { reminders: { enabled: true, leadDays: [14, 3], hour: 8 } });
+    await assert.rejects(saveSettings(db, { reminders: { enabled: true, leadDays: [], hour: 25 } }));
+  });
+
   it('stores custom jurisdictions', async () => {
     await saveCustomJurisdiction(db, thailand);
     assert.deepEqual(await listCustomJurisdictions(db), [thailand]);
@@ -108,6 +126,7 @@ describe('repo', () => {
       profile: { taxResidence: 'AE', passports: ['AU'] },
       stays: [{ id: 's1', country: 'US', entry: '2026-01-01', exit: '2026-01-31' }],
       customJurisdictions: [thailand],
+      settings: { reminders: { enabled: true, leadDays: [7], hour: 18 } },
     };
     await saveStay(db, { id: 'old', country: 'FR', entry: '2025-01-01' });
     await replaceAppData(db, data);
@@ -128,6 +147,7 @@ describe('repo', () => {
       profile: { taxResidence: 'AE', passports: ['AU'] },
       stays: [],
       customJurisdictions: [thailand],
+      settings: defaultSettings(),
     };
     // Simulate a mid-transaction failure by dropping a table the restore writes to
     await db.execAsync('DROP TABLE custom_jurisdictions');

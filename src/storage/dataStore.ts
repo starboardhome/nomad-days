@@ -1,6 +1,6 @@
-import { emptyAppData, AppDataSchema, type AppData, type Profile, type StayRecord } from '../data/schema';
+import { emptyAppData, AppDataSchema, type AppData, type Profile, type Settings, type StayRecord } from '../data/schema';
 import type { Db } from './db';
-import { deleteStay, loadAppData, replaceAppData, saveProfile, saveStays } from './repo';
+import { deleteStay, loadAppData, replaceAppData, saveProfile, saveSettings, saveStays } from './repo';
 
 /** What the app needs from storage. SQLite on devices; in-memory for web preview and tests. */
 export interface DataStore {
@@ -8,6 +8,7 @@ export interface DataStore {
   saveProfile(profile: Profile): Promise<void>;
   saveStays(stays: readonly StayRecord[]): Promise<void>;
   deleteStay(id: string): Promise<void>;
+  saveSettings(settings: Settings): Promise<void>;
   replaceAll(data: AppData): Promise<void>;
 }
 
@@ -16,6 +17,7 @@ export const sqliteStore = (db: Db): DataStore => ({
   saveProfile: (p) => saveProfile(db, p),
   saveStays: (s) => saveStays(db, s),
   deleteStay: (id) => deleteStay(db, id),
+  saveSettings: (s) => saveSettings(db, s),
   replaceAll: (d) => replaceAppData(db, d),
 });
 
@@ -40,6 +42,7 @@ export const memoryStore = (initial: AppData = emptyAppData()): DataStore => {
       update({ ...data, stays: [...data.stays.filter((s) => !ids.has(s.id)), ...stays] });
     },
     deleteStay: async (id) => update({ ...data, stays: data.stays.filter((s) => s.id !== id) }),
+    saveSettings: async (settings) => update({ ...data, settings }),
     replaceAll: async (next) => update(next),
   };
 };

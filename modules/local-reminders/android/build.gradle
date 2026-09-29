@@ -1,0 +1,25 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.localreminders'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.localreminders"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+  lintOptions {
+    abortOnError false
+  }
+}
+
+dependencies {
+  // AndroidX only (Apache-2.0, open source). No Google Play Services or Firebase, so it's F-Droid friendly.
+  // WorkManager persists scheduled work across app restarts and phone reboots.
+  implementation "androidx.work:work-runtime:2.10.1"
+  implementation "androidx.core:core:1.13.1"
+}
