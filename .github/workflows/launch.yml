@@ -50,7 +50,7 @@ jobs:
       - name: Build release app for the simulator
         run: |
           WORKSPACE=$(ls -d ios/*.xcworkspace | head -1)
-          SCHEME=$(xcodebuild -list -json -workspace "$WORKSPACE" | python3 -c "import json,sys; print(json.load(sys.stdin)['workspace']['schemes'][0])")
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace) # the app's scheme, not a Pod's
           xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -20
           exit ${PIPESTATUS[0]}
