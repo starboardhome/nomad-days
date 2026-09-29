@@ -1,0 +1,58 @@
+name: Launch test
+
+# Builds release apps (JS bundled, like a store build), launches them on an Android emulator
+# without Google Play Services and on an iPhone simulator, and fails if the app crashes.
+on:
+  pull_request:
+    paths: ['src/**', 'modules/**', 'app.json', 'package.json', 'package-lock.json', 'babel.config.js', 'metro.config.js', '.github/workflows/launch.yml', 'scripts/ci/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: lts/*, cache: npm }
+      - uses: actions/setup-java@v5
+        with: { distribution: zulu, java-version: '17' }
+      - run: npm ci
+      - run: npx expo prebuild --platform android --no-install
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew :app:assembleRelease --no-daemon
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Launch on emulator (AOSP image, no Google services)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: default
+          arch: x86_64
+          disable-animations: true
+          script: bash scripts/ci/android-launch.sh android/app/build/outputs/apk/release/app-release.apk "$(node -p "require('./app.json').expo.android.package")"
+
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: lts/*, cache: npm }
+      - run: npm ci
+      - run: npx expo prebuild --platform ios
+      - name: Build release app for the simulator
+        run: |
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -1)
+          SCHEME=$(xcodebuild -list -json -workspace "$WORKSPACE" | python3 -c "import json,sys; print(json.load(sys.stdin)['workspace']['schemes'][0])")
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -20
+          exit ${PIPESTATUS[0]}
+      - name: Launch on simulator
+        run: bash scripts/ci/ios-launch.sh "$(ls -d build/Build/Products/Release-iphonesimulator/*.app | head -1)" "$(node -p "require('./app.json').expo.ios.bundleIdentifier")"
