@@ -9,6 +9,7 @@
     "date-fns": "^4.4.0",
     "expo": "~57.0.25",
     "expo-constants": "~57.0.19",
+    "expo-crypto": "~57.0.3",
     "expo-device": "~57.0.2",
     "expo-document-picker": "~57.0.2",
     "expo-file-system": "~57.0.7",
@@ -60,8 +61,8 @@
     "dev": "expo start --dev-client --offline",
     "rules:gen": "tsx scripts/rules-gen.ts",
     "rules:check": "tsx scripts/rules-check.ts",
-    "test:domain": "tsx --test 'src/domain/tests/*.unit.ts'",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
+    "test:unit": "tsx --test 'src/**/tests/*.unit.ts'"
   },
   "private": true
 }

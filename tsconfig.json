@@ -20,6 +20,6 @@
   "exclude": [
     "node_modules",
     "scripts",
-    "src/domain/tests"
+    "src/**/tests"
   ]
 }

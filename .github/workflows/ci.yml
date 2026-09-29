@@ -23,8 +23,8 @@ jobs:
       - run: npm ci
       - name: Rules
         run: npm run rules:check -- ${{ github.event_name == 'schedule' && '--strict' || '' }}
-      - name: Domain tests
-        run: npm run test:domain
+      - name: Unit tests
+        run: npm run test:unit
       - name: Type-check
         run: npm run typecheck
       - name: Dependency audit
