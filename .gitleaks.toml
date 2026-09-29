@@ -1,0 +1,18 @@
+# Secret scanning config, used by the pre-commit hook and the "Secret scan" CI workflow.
+# See https://github.com/gitleaks/gitleaks#configuration
+
+title = "nomad-days"
+
+[extend]
+useDefault = true # all of gitleaks' built-in rules (API keys, tokens, private keys…)
+
+[[rules]]
+id = "hardcoded-passphrase"
+description = "A string literal assigned to a password/passphrase-like name"
+regex = '''(?i)\b(?:pass(?:word|phrase)?|pwd|secret)\s*[:=]\s*['"`]([^'"`\s]{8,})['"`]'''
+secretGroup = 1
+keywords = ["pass", "pwd", "secret"]
+
+[allowlist]
+description = "Lockfile hashes and generated files"
+paths = ['''package-lock\.json$''', '''src/rules/data/index\.generated\.ts$''']

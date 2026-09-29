@@ -62,7 +62,9 @@
     "rules:gen": "tsx scripts/rules-gen.ts",
     "rules:check": "tsx scripts/rules-check.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
-    "test:unit": "tsx --test 'src/**/tests/*.unit.ts'"
+    "test:unit": "tsx --test 'src/**/tests/*.unit.ts'",
+    "prepare": "git config core.hooksPath .githooks || true",
+    "secrets:scan": "gitleaks git --config .gitleaks.toml --redact --no-banner --verbose ."
   },
   "private": true
 }
