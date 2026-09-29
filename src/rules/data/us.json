@@ -1,0 +1,47 @@
+{
+  "id": "us",
+  "name": "United States",
+  "countries": ["US"],
+  "lastReviewed": "2026-09-29",
+  "rules": [
+    {
+      "id": "us-visa-waiver-90",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "Visa Waiver Program: 90 days per entry",
+      "limit": { "unit": "days", "value": 90 },
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["US"],
+      "eligibleNationalities": ["@US_VISA_WAIVER"],
+      "notes": [
+        "Visa Waiver stays cannot be extended.",
+        "A short trip to Canada, Mexico or a nearby island during your stay does not reset the 90 days.",
+        "Visa Waiver entry needs an approved ESTA. Frequent long visits can lead to refused entry.",
+        "Holders of other passports need a B visa. Their stay length is set on arrival, so check your I-94 record."
+      ],
+      "sources": [
+        "https://travel.state.gov/content/travel/en/us-visas/tourism-visit/visa-waiver-program.html"
+      ]
+    },
+    {
+      "id": "us-substantial-presence",
+      "category": "tax",
+      "kind": "weightedYears",
+      "label": "Substantial presence test (183 weighted days)",
+      "threshold": 183,
+      "minCurrentYearDays": 31,
+      "yearDivisors": [1, 3, 6],
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["US"],
+      "notes": [
+        "Counts all days this year, plus one third of last year's days and one sixth of the year before.",
+        "Any part of a day in the US counts. Some days are exempt and are not modelled: transit under 24 hours, regular commuting from Canada or Mexico, medical conditions, and exempt visa categories.",
+        "You may be able to avoid US tax residency under the closer connection exception (Form 8840) or a tax treaty.",
+        "US citizens and green card holders are taxed on worldwide income regardless of days spent."
+      ],
+      "sources": [
+        "https://www.irs.gov/individuals/international-taxpayers/substantial-presence-test"
+      ]
+    }
+  ]
+}
