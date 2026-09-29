@@ -55,4 +55,10 @@ jobs:
             -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -20
           exit ${PIPESTATUS[0]}
       - name: Launch on simulator
-        run: bash scripts/ci/ios-launch.sh "$(ls -d build/Build/Products/Release-iphonesimulator/*.app | head -1)" "$(node -p "require('./app.json').expo.ios.bundleIdentifier")"
+        run: |
+          APP=$(find build ios -type d -name '*.app' -path '*iphonesimulator*' -not -path '*/PlugIns/*' 2>/dev/null | head -1)
+          if [ -z "$APP" ]; then
+            echo "::error title=iOS: no .app found::$(find build -maxdepth 4 -type d | head -30 | tr '\n' ' ')"
+            exit 1
+          fi
+          bash scripts/ci/ios-launch.sh "$APP" "$(node -p "require('./app.json').expo.ios.bundleIdentifier")"
