@@ -45,6 +45,7 @@ print(next(x['udid'] for rt,xs in d.items() if 'iOS' in rt for x in xs if x['nam
   xcrun simctl uninstall "$DEVICE" "$ID" >/dev/null 2>&1 # start from a fresh install
 
   section "Build (Release, takes several minutes)"
+  say "Progress: tail -f $OUT/build.log"
   xcrun simctl spawn "$DEVICE" log stream --level error --style compact --predicate 'process CONTAINS[c] "nomad"' >"$OUT/device.log" 2>&1 &
   LOGPID=$!
   if ! npx expo run:ios --configuration Release --no-bundler -d "$DEVICE" >"$OUT/build.log" 2>&1; then
@@ -71,8 +72,11 @@ else
   adb uninstall "$ID" >/dev/null 2>&1
   adb logcat -c
 
-  section "Build (release variant, takes several minutes)"
-  if ! npx expo run:android --variant release --no-bundler >"$OUT/build.log" 2>&1; then
+  # Only compile native code for this device's CPU (4x faster than all ABIs)
+  ABI=$(adb shell getprop ro.product.cpu.abi | tr -d '\r')
+  section "Build (release variant for $ABI, 10+ minutes the first time)"
+  say "Progress: tail -f $OUT/build.log"
+  if ! ORG_GRADLE_PROJECT_reactNativeArchitectures="$ABI" npx expo run:android --variant release --no-bundler >"$OUT/build.log" 2>&1; then
     say "BUILD FAILED. Last lines of $OUT/build.log:"
     # Gradle's full "What went wrong" block (the root cause is nested at the end), else the last errors
     WRONG=$(sed -n '/What went wrong/,/\* Try/p' "$OUT/build.log" | head -60)
