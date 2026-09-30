@@ -23,7 +23,7 @@ Common fields:
 1. Copy an existing file, e.g. `uk.json`, to `src/rules/data/<id>.json` and edit it.
 2. Set `lastReviewed` to today's date.
 3. Run `npm run rules:gen`. This updates the import list in `index.generated.ts`.
-4. Run `npm run rules:check && npm run test:domain`.
+4. Run `npm run rules:check && npm run test:unit`.
 5. Add a test in `src/domain/tests/evaluators.unit.ts` using a real example from the official source.
 
 CI runs `rules:check` on every push. A monthly run fails if any file hasn't been reviewed in the last 12 months.
