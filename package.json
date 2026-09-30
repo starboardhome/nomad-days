@@ -4,8 +4,10 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/ui": "~57.0.20",
+    "@expo/vector-icons": "^15.0.2",
     "@noble/ciphers": "^2.4.0",
     "@noble/hashes": "^2.4.0",
+    "@react-native-community/datetimepicker": "9.1.0",
     "date-fns": "^4.4.0",
     "expo": "~57.0.25",
     "expo-constants": "~57.0.19",
