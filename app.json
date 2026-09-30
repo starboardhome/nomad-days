@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "nomad-days",
+    "name": "Nomad Days",
     "slug": "nomad-days",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.nomad-days"
+      "bundleIdentifier": "io.github.starboardhome.nomaddays",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +20,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.nomaddays",
+      "package": "io.github.starboardhome.nomaddays",
+      "versionCode": 1,
       "allowBackup": false
     },
     "web": {
