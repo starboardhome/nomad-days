@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { describe, it } from 'node:test';
-import type { AppData } from '../../data/schema';
+import { defaultSettings, type AppData } from '../../data/schema';
 import { BackupError, decryptBackup, encryptBackup, passphraseProblem } from '../envelope';
 
 const rng = (n: number) => new Uint8Array(randomBytes(n));
@@ -18,6 +18,7 @@ const data: AppData = {
     { id: 's2', country: 'IT', entry: '2026-09-20' },
   ],
   customJurisdictions: [],
+  settings: defaultSettings(),
 };
 
 const rejectsWith = (promise: Promise<unknown>, code: BackupError['code']) =>
@@ -33,6 +34,12 @@ describe('backup envelope', () => {
   it('round-trips data, including non-ASCII text', async () => {
     const text = await encryptBackup(data, PASS, rng, FAST);
     assert.deepEqual(await decryptBackup(text, PASS), data);
+  });
+
+  it('opens backups made before settings existed (fills in defaults)', async () => {
+    const { settings: _omit, ...legacy } = data;
+    const text = await encryptBackup(legacy as AppData, PASS, rng, FAST);
+    assert.deepEqual((await decryptBackup(text, PASS)).settings, defaultSettings());
   });
 
   it('never contains the plaintext', async () => {

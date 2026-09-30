@@ -3,6 +3,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider, type Theme } from 'expo-
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, useColorScheme, View } from 'react-native';
+import { useReminderSync } from '../features/reminders/useReminderSync';
 import { useApp } from '../state/appStore';
 import { Body, Heading } from '../ui/Text';
 
@@ -27,6 +28,7 @@ const Failed = ({ message }: { message?: string }) => (
 export default function RootLayout() {
   const { status, error, init } = useApp();
   const scheme = useColorScheme();
+  useReminderSync();
   useEffect(() => {
     init();
   }, [init]);

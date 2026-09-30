@@ -1,5 +1,8 @@
 import {
   AppDataSchema,
+  defaultSettings,
+  SettingsSchema,
+  type Settings,
   ProfileSchema,
   StayRecordSchema,
   type AppData,
@@ -97,6 +100,25 @@ export const deleteCustomJurisdiction = async (db: Db, id: string): Promise<void
   await db.runAsync('DELETE FROM custom_jurisdictions WHERE id = ?', [id]);
 };
 
+// ── Settings ────────────────────────────────────────────
+const SETTINGS_KEY = 'app';
+
+export const getSettings = async (db: Db): Promise<Settings> => {
+  const row = await db.getFirstAsync<{ value: string }>('SELECT value FROM settings WHERE key = ?', [SETTINGS_KEY]);
+  const parsed = row ? SettingsSchema.safeParse(JSON.parse(row.value)) : undefined;
+  return parsed?.success ? parsed.data : defaultSettings();
+};
+
+const writeSettings = (db: Db, settings: Settings) =>
+  db.runAsync('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value', [
+    SETTINGS_KEY,
+    JSON.stringify(settings),
+  ]);
+
+export const saveSettings = async (db: Db, settings: Settings): Promise<void> => {
+  await writeSettings(db, SettingsSchema.parse(settings));
+};
+
 // ── Whole-database snapshot (used by backup export/import) ─
 export const loadAppData = async (db: Db): Promise<AppData> =>
   AppDataSchema.parse({
@@ -104,6 +126,7 @@ export const loadAppData = async (db: Db): Promise<AppData> =>
     profile: await getProfile(db),
     stays: await listStays(db),
     customJurisdictions: await listCustomJurisdictions(db),
+    settings: await getSettings(db),
   });
 
 /** Replace everything with `data` in one transaction. Validates first, so bad data never half-writes. */
@@ -114,5 +137,6 @@ export const replaceAppData = async (db: Db, data: AppData): Promise<void> => {
     await writeProfile(db, valid.profile);
     for (const s of valid.stays) await writeStay(db, s);
     for (const j of valid.customJurisdictions) await writeCustom(db, j);
+    await writeSettings(db, valid.settings);
   });
 };

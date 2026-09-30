@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["LocalRemindersModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.localreminders.LocalRemindersModule"]
+  }
+}

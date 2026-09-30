@@ -1,0 +1,85 @@
+name: Native build
+
+# Compiles the real Android and iOS apps whenever native code or dependencies change,
+# and fails if any proprietary Google/Firebase dependency sneaks in (F-Droid rejects those).
+on:
+  pull_request:
+    paths:
+      - 'modules/**'
+      - 'app.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/native.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'modules/**'
+      - 'app.json'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: '17'
+      - run: npm ci
+      - name: Generate native project
+        run: npx expo prebuild --platform android --no-install
+      - name: 'F-Droid check: no Google Play Services / Firebase'
+        working-directory: android
+        run: |
+          set +e
+          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath --no-daemon > deps.txt 2>&1
+          status=$?
+          set -e
+          if [ $status -ne 0 ]; then
+            grep -E 'What went wrong|Could not|> ' deps.txt | head -15 | sed 's/^/::error::gradle: /'
+            exit $status
+          fi
+          # Which top-level dependency pulls each proprietary artifact in
+          FOUND=$(grep -iE 'com\.google\.(firebase|android\.gms)|play-services' deps.txt | sed 's/^[| +\\-]*//' | sort -u)
+          if [ -n "$FOUND" ]; then
+            echo "$FOUND" | head -20 | sed 's/^/::error::Proprietary dependency (F-Droid will reject): /'
+            grep -nE '^[+\\]--- ' deps.txt | grep -iE 'firebase|gms|play-services' | head -10 | sed 's/^/::error::Direct dependency: /' || true
+            exit 1
+          fi
+          echo "✔ No Firebase or Play Services dependencies"
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - name: Generate native project (runs pod install)
+        run: npx expo prebuild --platform ios
+      - name: Build for the iOS Simulator (unsigned)
+        run: |
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -1)
+          SCHEME=$(xcodebuild -list -json -workspace "$WORKSPACE" | python3 -c "import json,sys; print(json.load(sys.stdin)['workspace']['schemes'][0])")
+          echo "Building $SCHEME"
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build | tail -40
+          exit ${PIPESTATUS[0]}
