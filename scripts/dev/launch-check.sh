@@ -86,7 +86,8 @@ else
   say "❌ $ID is NOT running (it crashed or closed)."
 fi
 section "Errors from the app (last 30)"
-grep -iE 'nomad|ReactNative|JS|Fatal|exception|AndroidRuntime' "$OUT/device.log" 2>/dev/null | tail -30 | tee -a "$SUMMARY"
+# iOS: error/fault lines only, minus iOS 27 deprecation noise from React Native's status bar calls
+grep -E ' (E|F) |ReactNativeJS|AndroidRuntime|FATAL' "$OUT/device.log" 2>/dev/null | grep -v 'API has been deprecated' | tail -30 | tee -a "$SUMMARY"
 [[ -s "${OUT}/crash.log" ]] && { section "Crash buffer"; tail -40 "$OUT/crash.log" | tee -a "$SUMMARY"; }
 REPORT=$(ls -t ~/Library/Logs/DiagnosticReports/*.ips 2>/dev/null | head -1)
 [[ "$PLATFORM" == ios && -n "$REPORT" && $(find "$REPORT" -mmin -10 2>/dev/null) ]] && { section "Crash report $REPORT"; head -c 3000 "$REPORT" | tee -a "$SUMMARY"; }
