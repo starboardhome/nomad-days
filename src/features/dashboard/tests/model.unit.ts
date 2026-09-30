@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { emptyAppData, type AppData } from '../../../data/schema';
 import { toDayNum } from '../../../domain/days';
+import { applyPreset, emptyRuleDraft, toJurisdiction } from '../../rules/model';
 import { buildDashboard, ruleLine } from '../model';
 
 const today = toDayNum('2026-09-28');
@@ -19,6 +20,15 @@ const aussieInEurope = withData({
 });
 
 describe('dashboard model', () => {
+  it('covers a country once the user adds their own rules', () => {
+    const thailand = toJurisdiction(applyPreset(emptyRuleDraft('TH'), 'visit60'), '2026-09-28');
+    const dash = buildDashboard({ ...aussieInEurope, customJurisdictions: [thailand] }, today);
+    assert.deepEqual(dash.uncovered, []);
+    const card = dash.cards.find((c) => c.id === 'custom-th');
+    assert.equal(card?.ownRulesFor, 'TH');
+    assert.equal(dash.cards.find((c) => c.id === 'schengen')?.ownRulesFor, undefined);
+  });
+
   it('shows nothing until onboarding is complete', () => {
     assert.deepEqual(buildDashboard(emptyAppData(), today), { cards: [], uncovered: [] });
   });

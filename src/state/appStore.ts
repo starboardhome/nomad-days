@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { emptyAppData, type AppData, type Profile, type Settings, type StayRecord } from '../data/schema';
+import type { RawJurisdiction } from '../rules/schema';
 import type { DataStore } from '../storage/dataStore';
 import { openDataStore } from '../storage/openDataStore';
 
@@ -19,6 +20,8 @@ type Actions = Readonly<{
   saveProfile: (profile: Profile) => Promise<void>;
   saveStays: (stays: readonly StayRecord[]) => Promise<void>;
   deleteStay: (id: string) => Promise<void>;
+  saveCustomJurisdiction: (j: RawJurisdiction) => Promise<void>;
+  deleteCustomJurisdiction: (id: string) => Promise<void>;
   saveSettings: (settings: Settings) => Promise<void>;
   reload: () => Promise<void>;
   dismissReset: () => void;
@@ -51,6 +54,8 @@ export const useApp = create<AppState & Actions>((set, get) => {
     saveProfile: (profile) => commit((s) => s.saveProfile(profile)),
     saveStays: (stays) => commit((s) => s.saveStays(stays)),
     deleteStay: (id) => commit((s) => s.deleteStay(id)),
+    saveCustomJurisdiction: (j) => commit((s) => s.saveCustomJurisdiction(j)),
+    deleteCustomJurisdiction: (id) => commit((s) => s.deleteCustomJurisdiction(id)),
     saveSettings: (settings) => commit((s) => s.saveSettings(settings)),
     reload: () => commit(async () => {}),
     dismissReset: () => set({ wasReset: false }),

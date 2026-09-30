@@ -1,6 +1,16 @@
 import { emptyAppData, AppDataSchema, type AppData, type Profile, type Settings, type StayRecord } from '../data/schema';
+import type { RawJurisdiction } from '../rules/schema';
 import type { Db } from './db';
-import { deleteStay, loadAppData, replaceAppData, saveProfile, saveSettings, saveStays } from './repo';
+import {
+  deleteCustomJurisdiction,
+  deleteStay,
+  loadAppData,
+  replaceAppData,
+  saveCustomJurisdiction,
+  saveProfile,
+  saveSettings,
+  saveStays,
+} from './repo';
 
 /** What the app needs from storage. SQLite on devices; in-memory for web preview and tests. */
 export interface DataStore {
@@ -8,6 +18,8 @@ export interface DataStore {
   saveProfile(profile: Profile): Promise<void>;
   saveStays(stays: readonly StayRecord[]): Promise<void>;
   deleteStay(id: string): Promise<void>;
+  saveCustomJurisdiction(j: RawJurisdiction): Promise<void>;
+  deleteCustomJurisdiction(id: string): Promise<void>;
   saveSettings(settings: Settings): Promise<void>;
   replaceAll(data: AppData): Promise<void>;
 }
@@ -17,9 +29,13 @@ export const sqliteStore = (db: Db): DataStore => ({
   saveProfile: (p) => saveProfile(db, p),
   saveStays: (s) => saveStays(db, s),
   deleteStay: (id) => deleteStay(db, id),
+  saveCustomJurisdiction: (j) => saveCustomJurisdiction(db, j),
+  deleteCustomJurisdiction: (id) => deleteCustomJurisdiction(db, id),
   saveSettings: (s) => saveSettings(db, s),
   replaceAll: (d) => replaceAppData(db, d),
 });
+
+const byId = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id);
 
 const newestFirst = (a: StayRecord, b: StayRecord) =>
   b.entry.localeCompare(a.entry) || a.id.localeCompare(b.id);
@@ -42,6 +58,10 @@ export const memoryStore = (initial: AppData = emptyAppData()): DataStore => {
       update({ ...data, stays: [...data.stays.filter((s) => !ids.has(s.id)), ...stays] });
     },
     deleteStay: async (id) => update({ ...data, stays: data.stays.filter((s) => s.id !== id) }),
+    saveCustomJurisdiction: async (j) =>
+      update({ ...data, customJurisdictions: [...data.customJurisdictions.filter((c) => c.id !== j.id), j].sort(byId) }),
+    deleteCustomJurisdiction: async (id) =>
+      update({ ...data, customJurisdictions: data.customJurisdictions.filter((c) => c.id !== id) }),
     saveSettings: async (settings) => update({ ...data, settings }),
     replaceAll: async (next) => update(next),
   };

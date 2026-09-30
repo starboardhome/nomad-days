@@ -4,6 +4,7 @@
  */
 import type { AppData } from '../../data/schema';
 import { countryName } from '../../data/countries';
+import { isCustomJurisdiction } from '../../domain/custom';
 import { evaluateAll, type JurisdictionResult, type RuleResult } from '../../domain/evaluate';
 import { toDayNum, toISO, yearOf, type DayNum } from '../../domain/days';
 import type { Level } from '../../domain/status';
@@ -25,6 +26,7 @@ export type Card = Readonly<{
   name: string;
   present: boolean;
   level: Level;
+  ownRulesFor?: string; // country code, if these are the user's own rules (editable)
   rules: readonly RuleLine[];
 }>;
 
@@ -98,6 +100,7 @@ export const ruleLine = (r: RuleResult): RuleLine => {
 
 const toCard = (res: JurisdictionResult): Card => ({
   id: res.jurisdiction.id,
+  ...(isCustomJurisdiction(res.jurisdiction.id) && { ownRulesFor: [...res.jurisdiction.countries][0] }),
   name: res.jurisdiction.name,
   present: res.results.some((r) => r.status?.present),
   level: res.level,

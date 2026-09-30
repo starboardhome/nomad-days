@@ -3,4 +3,4 @@ export * from './presence';
 export * from './status';
 export * from './applicability';
 export * from './evaluate';
-export { createCustomJurisdiction } from './custom';
+export { buildCustomJurisdiction, createCustomJurisdiction, isCustomJurisdiction } from './custom';

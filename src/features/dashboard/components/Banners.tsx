@@ -35,9 +35,14 @@ export const ResetBanner = ({ onDismiss }: { onDismiss: () => void }) => (
 );
 
 export const UncoveredHint = ({ countries }: { countries: readonly string[] }) => (
-  <Banner tone="info" title="No stay rules bundled yet">
-    {`${countries.map(countryLabel).join(', ')}: the app doesn’t include rules for ${countries.length > 1 ? 'these' : 'this'} yet, so days there aren’t checked.`}
-  </Banner>
+  <View className="gap-2">
+    <Banner tone="info" title="No stay rules bundled yet">
+      {`${countries.map(countryLabel).join(', ')}: the app doesn’t include rules for ${countries.length > 1 ? 'these' : 'this'} yet, so days there aren’t checked. Add the limits yourself to track them.`}
+    </Banner>
+    {countries.map((c) => (
+      <Button key={c} label={`Add rules for ${countryLabel(c)}`} variant="secondary" onPress={() => router.push(`/rules/${c}`)} />
+    ))}
+  </View>
 );
 
 export const EmptyDashboard = () => (
