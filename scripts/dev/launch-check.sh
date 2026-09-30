@@ -60,7 +60,13 @@ print(next(x['udid'] for rt,xs in d.items() if 'iOS' in rt for x in xs if x['nam
   RUNNING=$(xcrun simctl spawn "$DEVICE" launchctl list | grep -c "$ID")
 else
   ID=$(appjson android.package)
-  adb get-state >/dev/null 2>&1 || { say "No Android emulator/device connected. Start one first (droid)."; exit 1; }
+  say "Waiting for an emulator/device (start one with droid)…"
+  for _ in $(seq 90); do
+    [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == 1 ]] && break
+    sleep 2
+  done
+  [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == 1 ]] ||
+    { say "No booted Android emulator/device after 3 min. Check: adb devices"; exit 1; }
   say "device: $(adb shell getprop ro.product.model | tr -d '\r'), Android $(adb shell getprop ro.build.version.release | tr -d '\r')"
   adb uninstall "$ID" >/dev/null 2>&1
   adb logcat -c
