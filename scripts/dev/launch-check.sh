@@ -74,7 +74,9 @@ else
   section "Build (release variant, takes several minutes)"
   if ! npx expo run:android --variant release --no-bundler >"$OUT/build.log" 2>&1; then
     say "BUILD FAILED. Last lines of $OUT/build.log:"
-    grep -E 'FAILURE|error:|Error|What went wrong' -A3 "$OUT/build.log" | tail -25 | tee -a "$SUMMARY"
+    # Gradle's full "What went wrong" block (the root cause is nested at the end), else the last errors
+    WRONG=$(sed -n '/What went wrong/,/\* Try/p' "$OUT/build.log" | head -60)
+    echo "${WRONG:-$(grep -E 'error:|Error' "$OUT/build.log" | tail -25)}" | tee -a "$SUMMARY"
     exit 1
   fi
   say "Built and launched. Waiting 20s…"
