@@ -1,56 +1,31 @@
-# Welcome to your Expo app 👋
+# Nomad Days
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Count your days abroad so you stay within the Schengen 90/180 rule, visitor limits and tax-residency thresholds. Everything stays on your phone.
 
-## Get started
+- **Log trips** (country, arrival and departure) and see days used, days left, your last safe day, and when you can return.
+- **Bundled rules** for Schengen, the UK and the US, plus **your own rules** for any other country.
+- **Private:** no accounts, servers or analytics. Data is encrypted on the device, and backups are encrypted files you export.
 
-1. Install dependencies
+Estimates only. This is not legal or tax advice.
 
-   ```bash
-   npm install
-   ```
+## Development
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Expo SDK 57, React Native, TypeScript and Expo Router.
 
 ```bash
-npm run reset-project
+npm install
+npx expo run:ios            # or run:android (the app needs a development build, not Expo Go)
+npm run dev                 # dev server for the development build
+npm run test:unit           # unit tests
+npm run typecheck
+npm run rules:check         # validate bundled rules
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- [docs/RULES.md](docs/RULES.md): adding a country or region
+- [docs/SECURITY.md](docs/SECURITY.md): privacy model and backup format
+- [docs/PRIVACY.md](docs/PRIVACY.md): privacy policy
+- [docs/RELEASING.md](docs/RELEASING.md): store and F-Droid releases
 
-### Other setup steps
+## Licence
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+[GPL-3.0-or-later](LICENSE)

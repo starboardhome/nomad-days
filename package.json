@@ -67,5 +67,6 @@
     "prepare": "git config core.hooksPath .githooks || true",
     "secrets:scan": "gitleaks git --config .gitleaks.toml --redact --no-banner --verbose ."
   },
+  "license": "GPL-3.0-or-later",
   "private": true
 }

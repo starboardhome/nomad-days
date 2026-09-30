@@ -1,0 +1,73 @@
+# Releasing
+
+## Identity (fixed once published)
+
+| | |
+|---|---|
+| App ID (iOS and Android) | `io.github.starboardhome.nomaddays` |
+| Name | Nomad Days |
+| Licence | GPL-3.0-or-later |
+| Support | GitHub Issues |
+| Privacy policy | [`docs/PRIVACY.md`](PRIVACY.md). Publish it on GitHub Pages and use that URL in the store listings |
+
+## Each release
+
+1. Bump `expo.version` in `app.json`, plus `android.versionCode` and `ios.buildNumber` (both +1).
+2. Add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` (500 characters at most).
+3. Run `npm run test:unit && npm run typecheck && npm run rules:check`.
+4. Tag it: `git tag v<version> && git push --tags`. F-Droid builds from tags.
+5. Build for the stores with EAS: `npx eas-cli@latest build --platform all --profile production`, then `npx eas-cli@latest submit`.
+
+## Still to do before the first release
+
+- [ ] App icon, adaptive icon and splash screen (still the Expo defaults in `assets/`)
+- [ ] Screenshots in `fastlane/metadata/android/en-US/images/phoneScreenshots/`, plus `images/icon.png` (512×512)
+- [ ] Developer name for the store pages
+- [ ] Publish `docs/PRIVACY.md` on GitHub Pages
+- [ ] `eas.json` with a `production` profile
+- [ ] Make the repository public (F-Droid only builds public source)
+- [ ] Merge request to <https://gitlab.com/fdroid/fdroiddata> with the recipe below
+
+## F-Droid recipe (draft, untested)
+
+F-Droid builds from source on its own servers, so the recipe has to reproduce what `native.yml` does: install Node, `npm ci`, `expo prebuild`, then run Gradle. Test it locally with `fdroid build -v -l io.github.starboardhome.nomaddays` (from a checkout of fdroiddata, using fdroidserver) before opening the merge request.
+
+`metadata/io.github.starboardhome.nomaddays.yml`:
+
+```yaml
+Categories:
+  - Travel
+License: GPL-3.0-or-later
+SourceCode: https://github.com/starboardhome/nomad-days
+IssueTracker: https://github.com/starboardhome/nomad-days/issues
+Changelog: https://github.com/starboardhome/nomad-days/releases
+
+AutoName: Nomad Days
+
+RepoType: git
+Repo: https://github.com/starboardhome/nomad-days.git
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 1
+    commit: v1.0.0
+    sudo:
+      - apt-get update
+      - apt-get install -y nodejs npm openjdk-17-jdk-headless
+    init: npm ci
+    prebuild: npx expo prebuild --platform android --no-install
+    subdir: android/app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+UpdateCheckData: app.json|"versionCode":\s*(\d+)|app.json|"version":\s*"([^"]+)"
+CurrentVersion: 1.0.0
+CurrentVersionCode: 1
+```
+
+Expect the F-Droid reviewers to ask about the following:
+- **Node version:** Debian's `nodejs` may be older than the Node 24 we use. We may need to install Node another way in `sudo`.
+- **Prebuilt binaries** from npm packages (for example Hermes and the React Native prebuilts). F-Droid may ask for these to be built from source or scanned. See `scandelete` and `scanignore` in the F-Droid docs.
+- **Reproducible builds:** if we want F-Droid to ship our signed APK, add `Binaries:` and `AllowedAPKSigningKeys:` once our own release APK builds identically.
