@@ -42,21 +42,26 @@
   "devDependencies": {
     "@testing-library/react-native": "^14.0.1",
     "@types/jest": "^30.0.0",
+    "@types/node": "^26.6.3",
     "@types/react": "~19.2.2",
     "jest": "^29.7.0",
     "jest-expo": "^57.0.5",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "dev": "expo start --dev-client --offline"
+    "dev": "expo start --dev-client --offline",
+    "rules:gen": "tsx scripts/rules-gen.ts",
+    "rules:check": "tsx scripts/rules-check.ts",
+    "test:domain": "tsx --test 'src/domain/tests/*.unit.ts'",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json"
   },
   "private": true
 }

@@ -1,0 +1,28 @@
+{
+  "id": "schengen",
+  "name": "Schengen Area",
+  "countries": ["@SCHENGEN", "MC", "SM", "VA"],
+  "lastReviewed": "2026-09-29",
+  "rules": [
+    {
+      "id": "schengen-90-180",
+      "category": "entry",
+      "kind": "rolling",
+      "label": "90 days in any 180-day period",
+      "maxDays": 90,
+      "windowDays": 180,
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["@EU", "@EEA_EFTA"],
+      "notes": [
+        "Days in all Schengen countries are added together. Entry and exit days both count.",
+        "Monaco, San Marino and Vatican City are counted as Schengen territory in practice.",
+        "Cyprus and Ireland are EU members but not Schengen members, so days there do not count. The EU Council is expected to decide on Cyprus joining by December 2026.",
+        "Some countries have bilateral visa-waiver agreements with individual Schengen states that can allow longer stays. These are not modelled."
+      ],
+      "sources": [
+        "https://home-affairs.ec.europa.eu/policies/schengen/border-crossing/short-stay-calculator_en",
+        "https://en.wikipedia.org/wiki/Schengen_Area"
+      ]
+    }
+  ]
+}

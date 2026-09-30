@@ -1,0 +1,6 @@
+{
+  "EU": ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"],
+  "EEA_EFTA": ["IS", "LI", "NO", "CH"],
+  "SCHENGEN": ["AT", "BE", "BG", "HR", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IS", "IT", "LV", "LI", "LT", "LU", "MT", "NL", "NO", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "CH"],
+  "US_VISA_WAIVER": ["AD", "AU", "AT", "BE", "BN", "CL", "HR", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IS", "IE", "IL", "IT", "JP", "LV", "LI", "LT", "LU", "MT", "MC", "NL", "NZ", "NO", "PL", "PT", "QA", "SM", "SG", "SK", "SI", "KR", "ES", "SE", "CH", "TW", "GB"]
+}

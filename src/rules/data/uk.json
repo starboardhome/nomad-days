@@ -1,0 +1,44 @@
+{
+  "id": "uk",
+  "name": "United Kingdom",
+  "countries": ["GB"],
+  "lastReviewed": "2026-09-29",
+  "rules": [
+    {
+      "id": "uk-visitor-6-months",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "Up to 6 months per visit",
+      "limit": { "unit": "months", "value": 6 },
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["GB", "IE"],
+      "notes": [
+        "Visitors must not live in the UK through frequent or successive visits. Border officers can refuse entry even if you are under 6 months.",
+        "Many nationalities need an Electronic Travel Authorisation (ETA) before travelling.",
+        "The last safe day is calculated conservatively as 6 calendar months minus one day. Check the date on your entry record."
+      ],
+      "sources": [
+        "https://www.gov.uk/standard-visitor",
+        "https://www.gov.uk/guidance/check-when-you-can-get-an-electronic-travel-authorisation-eta"
+      ]
+    },
+    {
+      "id": "uk-srt-automatic-183",
+      "category": "tax",
+      "kind": "taxYear",
+      "label": "Statutory Residence Test: 183 days in the tax year",
+      "threshold": 183,
+      "yearStart": "04-06",
+      "counting": "midnight",
+      "notes": [
+        "Only the automatic 183-day test is modelled. Under the 'sufficient ties' test you can become UK resident with as few as 16 days, depending on your ties (family, accommodation, work, 90-day and country ties).",
+        "A day counts if you are in the UK at midnight at the end of that day. Some transit and exceptional-circumstance days are excluded.",
+        "The UK tax year runs from 6 April to 5 April."
+      ],
+      "sources": [
+        "https://www.gov.uk/government/publications/rdr3-statutory-residence-test-srt",
+        "https://www.litrg.org.uk/international/residence-and-domicile/uk-tax-residence/statutory-residence-test"
+      ]
+    }
+  ]
+}
