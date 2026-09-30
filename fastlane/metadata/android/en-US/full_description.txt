@@ -1,0 +1,25 @@
+Nomad Days counts your days abroad so you stay within visa-free limits and tax-residency thresholds.
+
+Log your trips (country, arrival and departure). The app shows, for each region you've visited:
+
+* days used and days left
+* the last day you can safely stay
+* when you can come back
+
+<b>Rules included</b>
+
+* Schengen Area: 90 days in any 180
+* United Kingdom: up to 6 months per visit, and 183 days in the tax year (Statutory Residence Test)
+* United States: 90 days per entry (Visa Waiver Program), and the substantial presence test
+
+You can add your own rules for countries that aren't bundled yet: a limit per visit, a rolling window (for example 90 days in 180), or a tax-days threshold.
+
+<b>Private by design</b>
+
+* No accounts, no servers, no analytics, no ads
+* Your data is encrypted on the device (SQLCipher, AES-256)
+* Backups are encrypted files that you export and keep, protected by a passphrase only you know
+
+Reminders are scheduled on the device and don't use Google services.
+
+Estimates only. This is not legal or tax advice. Rules change, so check official sources before you travel.
