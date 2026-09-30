@@ -1,0 +1,17 @@
+#!/bin/sh
+# Blocks commits that contain secrets. Installed automatically by `npm install`
+# (the "prepare" script points git at this folder).
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "⚠  gitleaks isn't installed, so staged changes weren't scanned for secrets."
+  echo "   Install it once with: brew install gitleaks"
+  exit 0
+fi
+
+if ! gitleaks git --pre-commit --staged --config .gitleaks.toml --redact --no-banner --verbose .; then
+  echo ""
+  echo "✖  Commit blocked: gitleaks found what looks like a secret in your staged changes (shown above)."
+  echo "   • Real secret? Remove it. Secrets never belong in this repo."
+  echo "   • False positive? Add a  // gitleaks:allow  comment at the end of that line."
+  exit 1
+fi

@@ -35,6 +35,17 @@ A JSON envelope looks like this:
 - **Libraries:** crypto comes from `@noble/ciphers` and `@noble/hashes`, which are audited, pure JavaScript and have no native code. Random bytes come from `expo-crypto`, which uses the OS's secure random number generator.
 - **Lost passphrase:** there is no recovery. That is intentional.
 
+## Secret scanning
+
+Two layers stop credentials reaching the repo:
+
+- **Before each commit:** `.githooks/pre-commit` runs `gitleaks` on your staged changes. `npm install` switches it on automatically through the `prepare` script. To use it, install gitleaks once with `brew install gitleaks`.
+- **On every push and pull request:** the **Secret scan** workflow runs a pinned, checksum-verified copy of gitleaks over the full git history.
+
+Rules live in `.gitleaks.toml`. That file uses gitleaks' default rules plus one that catches hard-coded passwords and passphrases. Run `npm run secrets:scan` to scan the history yourself.
+
+For a false positive, add `// gitleaks:allow` to the end of the line. Never commit a real secret, even temporarily: it stays in git history.
+
 ## Reporting a vulnerability
 
 Please open a private security advisory on GitHub rather than a public issue.
