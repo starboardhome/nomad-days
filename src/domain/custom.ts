@@ -1,4 +1,4 @@
-import { JurisdictionSchema, type Jurisdiction, type RawRule } from '../rules/schema';
+import { JurisdictionSchema, type Jurisdiction, type RawJurisdiction, type RawRule } from '../rules/schema';
 import { resolveJurisdiction } from '../rules/load';
 
 type Managed = 'id' | 'sources' | 'notes' | 'exemptNationalities' | 'eligibleNationalities';
@@ -9,27 +9,34 @@ export type CustomRuleInput = RawRule extends infer R
     : never
   : never;
 
+/** Placeholder source for rules without a link (the schema requires one) */
+export const NO_SOURCE = 'https://user-defined.local';
+
+export const customJurisdictionId = (country: string) => `custom-${country.toLowerCase()}`;
+export const isCustomJurisdiction = (id: string) => id.startsWith('custom-');
+
 /**
- * A user-defined jurisdiction for a country the app doesn't bundle
- * (stored on-device only). Validated with the same schema as bundled rules.
+ * A user-defined jurisdiction for a country the app doesn't bundle, in its stored form
+ * (on-device only). Validated with the same schema as bundled rules.
  */
-export const createCustomJurisdiction = (
+export const buildCustomJurisdiction = (
   country: string,
   name: string,
   rules: readonly CustomRuleInput[],
   today: string,
-): Jurisdiction => {
-  const id = `custom-${country.toLowerCase()}`;
-  const raw = JurisdictionSchema.parse({
+  source: string = NO_SOURCE,
+): RawJurisdiction => {
+  const id = customJurisdictionId(country);
+  return JurisdictionSchema.parse({
     id,
     name,
     countries: [country],
     lastReviewed: today,
-    rules: rules.map((r, i) => ({
-      ...r,
-      id: `${id}-${i + 1}`,
-      sources: ['https://user-defined.local'],
-    })),
+    rules: rules.map((r, i) => ({ ...r, id: `${id}-${i + 1}`, sources: [source] })),
   });
-  return resolveJurisdiction(raw, {});
 };
+
+/** Same as buildCustomJurisdiction, resolved for evaluation */
+export const createCustomJurisdiction = (
+  ...args: Parameters<typeof buildCustomJurisdiction>
+): Jurisdiction => resolveJurisdiction(buildCustomJurisdiction(...args), {});

@@ -1,5 +1,6 @@
 import { AboutSection } from '../../features/settings/components/AboutSection';
 import { BackupSection } from '../../features/settings/components/BackupSection';
+import { CustomRulesSection } from '../../features/settings/components/CustomRulesSection';
 import { ProfileSection } from '../../features/settings/components/ProfileSection';
 import { RemindersSection } from '../../features/settings/components/RemindersSection';
 import { useApp } from '../../state/appStore';
@@ -12,6 +13,7 @@ export default function SettingsScreen() {
     <Screen>
       {!persistent ? <Banner tone="warn" title="Preview mode: nothing is saved in the browser" /> : null}
       <ProfileSection />
+      <CustomRulesSection />
       <RemindersSection />
       <BackupSection />
       <AboutSection />
