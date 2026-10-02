@@ -29,6 +29,17 @@ describe('dashboard model', () => {
     assert.equal(dash.cards.find((c) => c.id === 'schengen')?.ownRulesFor, undefined);
   });
 
+  it('shows your own rules even for countries you have no trips in yet', () => {
+    const own = (c: string) => toJurisdiction(applyPreset(emptyRuleDraft(c), 'visit30'), '2026-09-28');
+    const dash = buildDashboard({ ...aussieInEurope, customJurisdictions: [own('TH'), own('VN')] }, today);
+    const vietnam = dash.cards.find((c) => c.id === 'custom-vn');
+    assert.ok(dash.cards.find((c) => c.id === 'custom-th'));
+    assert.equal(vietnam?.present, false);
+    assert.equal(vietnam?.rules[0].headline, '30 days available');
+    // Bundled rules still only show where you've been (no US card)
+    assert.equal(dash.cards.some((c) => c.id === 'us'), false);
+  });
+
   it('shows nothing until onboarding is complete', () => {
     assert.deepEqual(buildDashboard(emptyAppData(), today), { cards: [], uncovered: [] });
   });

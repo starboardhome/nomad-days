@@ -118,7 +118,15 @@ export const buildDashboard = (data: AppData, today: DayNum): Dashboard => {
   if (!taxResidence) return { cards: [], uncovered: [] };
 
   const js = allJurisdictions(data);
-  const cards = evaluateAll(js, data.stays, { passports, taxResidence }, today).map(toCard).sort(byPriority);
+  const profile = { passports, taxResidence };
+  // Bundled rules only matter where you've been; your own rules always show (you added them for a reason,
+  // often before the trip)
+  const isOwn = (j: Jurisdiction) => isCustomJurisdiction(j.id);
+  const results = [
+    ...evaluateAll(js.filter((j) => !isOwn(j)), data.stays, profile, today),
+    ...evaluateAll(js.filter(isOwn), data.stays, profile, today, true),
+  ];
+  const cards = results.map(toCard).sort(byPriority);
   const covered = (c: string) => js.some((j) => j.countries.has(c));
   const uncovered = [...new Set(data.stays.map((s) => s.country))]
     .filter((c) => c !== taxResidence && !covered(c))
