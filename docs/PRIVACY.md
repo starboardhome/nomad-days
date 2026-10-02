@@ -1,16 +1,16 @@
 # Privacy policy
 
-_Last updated: 30 September 2026_
+_Last updated: 2 October 2026_
 
 Nomad Days is an open-source app for counting days spent in different countries. This policy covers the iOS and Android apps.
 
 ## What the app collects
 
-Nothing. The app has no accounts and no servers. It includes no analytics, crash reporting, advertising or tracking SDKs. The app makes no network requests.
+Nothing. The app has no accounts and no servers. It includes no analytics, crash reporting, advertising or tracking SDKs. The app makes no network requests. Links to official guidance (for example HMRC) open in your web browser only when you tap them.
 
 ## Data you enter
 
-The countries of your tax residence and passports, your trips, your own rules and your settings are stored **only on your device**:
+The countries of your tax residence and passports, your trips (including planned ones), your own rules, your answers to the UK residence questions and your settings are stored **only on your device**:
 
 - in a database encrypted with SQLCipher (AES-256)
 - with the encryption key held in the iOS Keychain or Android Keystore, available only on this device
