@@ -27,5 +27,9 @@ jobs:
         run: npm run test:unit
       - name: Type-check
         run: npm run typecheck
+      - name: iOS project adopts the UIScene life cycle (required by the iOS 27 SDK)
+        run: |
+          npx expo prebuild --platform ios --no-install
+          bash scripts/ci/check-ios-scene.sh
       - name: Dependency audit
         run: npm audit --omit=dev --audit-level=high

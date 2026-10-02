@@ -6,6 +6,8 @@ on:
   pull_request:
     paths:
       - 'modules/**'
+      - 'plugins/**'
+      - 'scripts/ci/**'
       - 'app.json'
       - 'package.json'
       - 'package-lock.json'
@@ -14,6 +16,8 @@ on:
     branches: [main]
     paths:
       - 'modules/**'
+      - 'plugins/**'
+      - 'scripts/ci/**'
       - 'app.json'
       - 'package.json'
       - 'package-lock.json'
@@ -71,6 +75,8 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
+      - name: Use the newest Xcode on the runner
+        run: bash scripts/ci/select-xcode.sh
       - run: npm ci
       - name: Generate native project (runs pod install)
         run: npx expo prebuild --platform ios
