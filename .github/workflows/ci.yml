@@ -31,5 +31,5 @@ jobs:
         run: |
           npx expo prebuild --platform ios --no-install
           bash scripts/ci/check-ios-scene.sh
-      - name: Dependency audit
-        run: npm audit --omit=dev --audit-level=high
+      - name: Dependency audit (high/critical, minus documented exceptions)
+        run: node scripts/ci/audit.mjs

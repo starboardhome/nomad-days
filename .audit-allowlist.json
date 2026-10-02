@@ -1,0 +1,12 @@
+{
+  "$comment": "Known high/critical advisories CI accepts for now. Each needs a reason and an expiry; CI fails once it expires, so it gets re-checked. See scripts/ci/audit.mjs.",
+  "exceptions": [
+    {
+      "id": "GHSA-86w9-cpqp-85rv",
+      "package": "node-forge",
+      "reason": "No patched release exists (<=1.4.0, latest is 1.4.0). Only reached through expo > @expo/cli (build tooling for update code signing); not bundled into the app.",
+      "added": "2026-10-02",
+      "expires": "2026-12-01"
+    }
+  ]
+}

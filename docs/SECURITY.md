@@ -59,3 +59,7 @@ For a false positive, add `// gitleaks:allow` to the end of the line. Never comm
 ## Reporting a vulnerability
 
 Please open a private security advisory on GitHub rather than a public issue.
+
+## Dependency audit exceptions
+
+CI fails on any high or critical advisory in production dependencies (`scripts/ci/audit.mjs`). When an advisory has no fix yet and doesn't affect the shipped app, it can be accepted in `.audit-allowlist.json` with a reason and an `expires` date (about two months out). CI fails again once it expires, so each exception gets re-checked: fix it if a patch exists, extend it with a new reason, or remove it. CI also warns when an exception is no longer needed.
