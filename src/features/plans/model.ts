@@ -51,11 +51,14 @@ export const verdictFor = (check: TripCheck, country: string): Verdict => {
     };
   }
   const spare = check.spare;
+  // Tightest tax-day test after the trip, e.g. "153 tax days left"
+  const tax = [...check.taxAfter].sort((a, b) => a.daysLeft - b.daysLeft)[0];
+  const parts = [spare && `${plural(spare.days, 'day')} to spare`, tax && `${plural(tax.daysLeft, 'tax day')} left`].filter(Boolean);
   return {
     tone: 'ok',
-    short: spare ? `✓ Fits · ${plural(spare.days, 'day')} to spare` : '✓ Fits',
+    short: ['✓ Fits', ...parts].join(' · '),
     title: spare ? `Fits, with ${plural(spare.days, 'day')} to spare in ${spare.jurisdiction}` : 'Fits within your limits',
-    details: [],
+    details: tax ? [`Afterwards: ${plural(tax.daysLeft, 'day')} before tax residency in ${tax.jurisdiction}.`] : [],
   };
 };
 

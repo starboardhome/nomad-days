@@ -33,7 +33,7 @@ describe('planned trip checks', () => {
   it('reports the first day a trip would break a rule', () => {
     const r = check(planned('es', 'ES', '2026-10-10', '2026-10-25'), [summer]);
     assert.deepEqual(r.issues, [
-      { jurisdiction: 'Schengen Area', rule: '90 days in any 180-day period', category: 'entry', on: '2026-10-20' },
+      { ruleId: 'schengen-90-180', jurisdiction: 'Schengen Area', rule: '90 days in any 180-day period', category: 'entry', on: '2026-10-20' },
     ]);
     assert.equal(r.spare, undefined);
   });

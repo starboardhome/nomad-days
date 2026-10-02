@@ -59,7 +59,7 @@ describe('planned trip verdicts', () => {
     assert.match(byId.over.details[0], /Schengen Area limit from 20 Oct 2026/);
     assert.equal(byId.th.tone, 'unknown');
 
-    const visa = verdictFor({ covered: true, issues: [], visaNeeded: ['United States'] }, 'US');
+    const visa = verdictFor({ covered: true, issues: [], visaNeeded: ['United States'], taxAfter: [] }, 'US');
     assert.deepEqual([visa.tone, visa.short], ['warn', 'Visa needed']);
   });
 

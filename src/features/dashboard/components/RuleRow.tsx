@@ -31,6 +31,12 @@ export const RuleRow = ({ line }: { line: RuleLine }) => (
         {d}
       </Text>
     ))}
+    {line.plans.map((p) => (
+      <Text key={p.text} className={`text-sm font-medium ${p.tone === 'danger' ? 'text-danger dark:text-red-300' : 'text-brand dark:text-brand-dark'}`}>
+        {p.tone === 'danger' ? '✗ ' : '→ '}
+        {p.text}
+      </Text>
+    ))}
     <Notes notes={line.notes} />
   </View>
 );

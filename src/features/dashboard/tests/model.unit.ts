@@ -6,6 +6,7 @@ import { applyPreset, emptyRuleDraft, toJurisdiction } from '../../rules/model';
 import { buildDashboard, ruleLine } from '../model';
 
 const today = toDayNum('2026-09-28');
+const day = toDayNum;
 
 const withData = (patch: Partial<AppData>): AppData => ({ ...emptyAppData(), ...patch });
 
@@ -17,6 +18,44 @@ const aussieInEurope = withData({
     { id: 'c', country: 'TH', entry: '2026-08-01', exit: '2026-08-20' },
     { id: 'd', country: 'AE', entry: '2026-08-21', exit: '2026-09-19' },
   ],
+});
+
+describe('dashboard: planned trips under tax tests', () => {
+  // A British/Irish passport (UK visitor rule N/A) but UAE tax resident, so the UK tax test applies
+  const uk = withData({
+    profile: { taxResidence: 'AE', passports: ['IE'] },
+    stays: [
+      { id: 'sep', country: 'GB', entry: '2026-09-01', exit: '2026-09-19' }, // 18 nights this tax year
+      { id: 'nov', country: 'GB', entry: '2026-11-10', exit: '2026-11-20', plan: 'booked' }, // 10 more
+      { id: 'may', country: 'GB', entry: '2027-05-01', exit: '2027-05-11', plan: 'maybe' }, // next tax year
+    ],
+  });
+  const taxLine = (d: AppData) => buildDashboard(d, day('2026-10-02')).cards.find((c) => c.id === 'uk')!.rules[1];
+
+  it('adds what each upcoming trip would leave', () => {
+    const line = taxLine(uk);
+    assert.equal(line.headline, '164 days before tax residency');
+    assert.deepEqual(line.plans, [
+      { tone: 'ok', text: 'With your booked trip (10 Nov – 20 Nov): 154 days before tax residency (28 of 183 this tax year)' },
+      {
+        tone: 'ok',
+        text: 'With your maybe trip (1 May 2027 – 11 May 2027): 172 days before tax residency (10 of 183 in the tax year to 5 Apr 2028)',
+      },
+    ]);
+  });
+
+  it('says when a trip would make you tax resident', () => {
+    // 18 nights + 165 from 10 Oct = 183rd night on 23 Mar
+    const long = withData({ ...uk, stays: [uk.stays[0], { id: 'w', country: 'GB', entry: '2026-10-10', exit: '2027-04-05', plan: 'booked' }] });
+    assert.deepEqual(taxLine(long).plans, [
+      { tone: 'danger', text: 'With your booked trip (10 Oct – 5 Apr 2027): tax resident from 23 Mar 2027' },
+    ]);
+  });
+
+  it('shows a country you only plan to visit', () => {
+    const plannedOnly = withData({ ...uk, stays: [uk.stays[1]] });
+    assert.ok(buildDashboard(plannedOnly, day('2026-10-02')).cards.some((c) => c.id === 'uk'));
+  });
 });
 
 describe('dashboard model', () => {

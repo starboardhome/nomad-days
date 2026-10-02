@@ -43,13 +43,24 @@ export const scenarioFor = (trip: PlannedTrip, stays: readonly TripLike[], today
   return [...real, ...planned];
 };
 
-export type TripIssue = Readonly<{ jurisdiction: string; rule: string; category: Rule['category']; on: ISODate }>;
+export type TripIssue = Readonly<{ ruleId: string; jurisdiction: string; rule: string; category: Rule['category']; on: ISODate }>;
+
+/** Tax-day test after the trip: how many days you'd have left before becoming resident */
+export type TaxAfter = Readonly<{
+  ruleId: string;
+  jurisdiction: string;
+  used: number; //      days counted this tax year, including the trip
+  limit: number;
+  daysLeft: number; //  more days before you'd become resident (not capped at the end of the tax year)
+  resetsOn?: ISODate;
+}>;
 
 export type TripCheck = Readonly<{
   covered: boolean; //                                      false: no rules for this country
   issues: readonly TripIssue[]; //                          rules this trip would break, and from when
   visaNeeded: readonly string[]; //                        jurisdictions none of your passports can enter visa-free
   spare?: Readonly<{ days: number; jurisdiction: string }>; // tightest entry-rule margin if it fits
+  taxAfter: readonly TaxAfter[]; //                         tax tests the trip doesn't break
 }>;
 
 /** Is `rule` broken on `day`, given presence `p`? */
@@ -83,6 +94,7 @@ export const checkPlannedTrip = (
   const issues: TripIssue[] = [];
   const visaNeeded = new Set<string>();
   let spare: TripCheck['spare'];
+  const taxAfter: TaxAfter[] = [];
 
   for (const j of relevant) {
     for (const rule of j.rules) {
@@ -92,12 +104,17 @@ export const checkPlannedTrip = (
       const p = presenceIn(scenario, j.countries, rule.counting, exit);
       const first = range(entry, exit).find((d) => breachedOn(rule, p, d));
       if (first !== undefined) {
-        issues.push({ jurisdiction: j.name, rule: rule.label, category: rule.category, on: toISO(first) });
+        issues.push({ ruleId: rule.id, jurisdiction: j.name, rule: rule.label, category: rule.category, on: toISO(first) });
       } else if (rule.kind === 'rolling' || rule.kind === 'perVisit') {
         const days = margin(rule, p, exit);
         if (!spare || days < spare.days) spare = { days, jurisdiction: j.name };
+      } else {
+        // As of the day after the trip: days already counted, including the trip
+        const after = evaluateRule(rule, p, exit + 1);
+        const daysLeft = Math.max(0, Math.ceil(after.limit - after.used - 1e-9) - 1); // reaching the limit = resident
+        taxAfter.push({ ruleId: rule.id, jurisdiction: j.name, used: after.used, limit: after.limit, daysLeft, resetsOn: after.resetsOn });
       }
     }
   }
-  return { covered: relevant.length > 0, issues, visaNeeded: [...visaNeeded], spare };
+  return { covered: relevant.length > 0, issues, visaNeeded: [...visaNeeded], spare, taxAfter };
 };
