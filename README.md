@@ -23,7 +23,7 @@ npm run rules:check         # validate bundled rules
 
 - [docs/RULES.md](docs/RULES.md): adding a country or region
 - [docs/SECURITY.md](docs/SECURITY.md): privacy model and backup format
-- [docs/PRIVACY.md](docs/PRIVACY.md): privacy policy
+- [Privacy policy](https://starboardhome.github.io/nomad-days/privacy/) (source: [docs/PRIVACY.md](docs/PRIVACY.md))
 - [docs/RELEASING.md](docs/RELEASING.md): store and F-Droid releases
 
 ## Licence
