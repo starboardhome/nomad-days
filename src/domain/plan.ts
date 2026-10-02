@@ -75,6 +75,10 @@ const breachedOn = (rule: Rule, p: Presence, day: DayNum): boolean => {
   }
 };
 
+/** Over a tax threshold on the trip's first day, counting everything except the trip */
+const alreadyOver = (rule: Rule, scenario: readonly Stay[], trip: PlannedTrip, countries: ReadonlySet<string>, entry: DayNum) =>
+  evaluateRule(rule, presenceIn(scenario.filter((s) => s !== trip), countries, rule.counting, entry), entry).level === 'over';
+
 /** How many more days you could stay right after the trip ends (entry rules) */
 const margin = (rule: RuleOf<'rolling'> | RuleOf<'perVisit'>, p: Presence, exit: DayNum): number =>
   rule.kind === 'rolling'
@@ -102,6 +106,8 @@ export const checkPlannedTrip = (
       if (a === 'visaRequired') visaNeeded.add(j.name);
       if (a !== 'applies') continue;
       const p = presenceIn(scenario, j.countries, rule.counting, exit);
+      // Already tax resident there this tax year before the trip: the trip changes nothing
+      if (rule.category === 'tax' && alreadyOver(rule, scenario, trip, j.countries, entry)) continue;
       const first = range(entry, exit).find((d) => breachedOn(rule, p, d));
       if (first !== undefined) {
         issues.push({ ruleId: rule.id, jurisdiction: j.name, rule: rule.label, category: rule.category, on: toISO(first) });

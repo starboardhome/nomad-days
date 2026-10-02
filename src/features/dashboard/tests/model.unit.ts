@@ -52,6 +52,23 @@ describe('dashboard: planned trips under tax tests', () => {
     ]);
   });
 
+  it('uses your UK ties: a leaver with 3 ties is resident after 46 days', () => {
+    const tied = withData({ ...uk, settings: { ...uk.settings, ukTies: { leaver: true, family: true, accommodation: true } } });
+    const line = taxLine(tied);
+    // Family + accommodation, plus the country tie: the UK is where they've spent most midnights this tax year
+    assert.equal(line.label, 'Statutory Residence Test: 46 days with your UK ties');
+    assert.match(line.notes[0], /3 UK ties \(family, accommodation, country\)/);
+    assert.equal(line.headline, '27 days before tax residency'); // 45 - 18
+    assert.equal(line.plans[0].text, 'With your booked trip (10 Nov – 20 Nov): 17 days before tax residency (28 of 46 this tax year)');
+  });
+
+  it("doesn't blame a trip for a tax threshold you've already reached", () => {
+    const resident = withData({ ...uk, settings: { ...uk.settings, ukTies: { leaver: true, family: true, accommodation: true, work: true } } });
+    const line = taxLine(resident); // 5 ties: resident from 16 days, and there have been 18
+    assert.equal(line.headline, 'Tax residency threshold reached');
+    assert.deepEqual(line.plans.filter((p) => p.text.includes('10 Nov')), []);
+  });
+
   it('shows a country you only plan to visit', () => {
     const plannedOnly = withData({ ...uk, stays: [uk.stays[1]] });
     assert.ok(buildDashboard(plannedOnly, day('2026-10-02')).cards.some((c) => c.id === 'uk'));

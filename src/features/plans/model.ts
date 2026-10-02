@@ -20,7 +20,7 @@ export const checkTrip = (trip: PlannedTrip, data: AppData, today: DayNum): Trip
   checkPlannedTrip(
     trip,
     data.stays,
-    allJurisdictions(data),
+    allJurisdictions(data, today),
     { passports: data.profile.passports, taxResidence: data.profile.taxResidence ?? '' },
     today,
   );

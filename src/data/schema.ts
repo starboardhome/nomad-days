@@ -31,8 +31,21 @@ export const ReminderSettingsSchema = z.object({
   hour: z.number().int().min(0).max(23), //                   local time to send them
 });
 
+/**
+ * Answers for the UK Statutory Residence Test "sufficient ties" test (unanswered = undefined).
+ * The 90-day and country ties are also worked out from trips.
+ */
+export const UkTiesSchema = z.object({
+  leaver: z.boolean().optional(), //       UK resident in any of the 3 previous tax years
+  family: z.boolean().optional(),
+  accommodation: z.boolean().optional(),
+  work: z.boolean().optional(),
+  ninetyDays: z.boolean().optional(), //  >90 UK days in either of the last 2 tax years (before using the app)
+});
+
 export const SettingsSchema = z.object({
   reminders: ReminderSettingsSchema,
+  ukTies: UkTiesSchema.optional(),
 });
 
 export const defaultSettings = (): Settings => ({
@@ -55,6 +68,7 @@ export type Profile = z.infer<typeof ProfileSchema>;
 export type AppData = z.infer<typeof AppDataSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;
 export type ReminderSettings = z.infer<typeof ReminderSettingsSchema>;
+export type UkTies = z.infer<typeof UkTiesSchema>;
 
 export const emptyAppData = (): AppData => ({
   schemaVersion: 1,

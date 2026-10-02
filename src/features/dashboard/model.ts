@@ -10,7 +10,7 @@ import { evaluateAll, type JurisdictionResult, type RuleResult } from '../../dom
 import { toDayNum, toISO, yearOf, type DayNum } from '../../domain/days';
 import type { Level } from '../../domain/status';
 import type { Jurisdiction } from '../../rules';
-import { allJurisdictions } from '../jurisdictions';
+import { allJurisdictions, UK_SRT_RULE } from '../jurisdictions';
 import { upcomingPlans, type PlannedItem } from '../plans/model';
 import { formatDate, formatShortDate, plural } from '../../ui/format';
 
@@ -23,6 +23,7 @@ export type RuleLine = Readonly<{
   details: readonly string[]; // "Used 69 of 90 days", "Leave by 19 Oct 2026"
   notes: readonly string[];
   plans: readonly PlanLine[]; // tax tests: what upcoming trips would do, e.g. "153 days before tax residency"
+  link?: Readonly<{ label: string; href: '/uk-ties' }>;
 }>;
 
 export type PlanLine = Readonly<{ text: string; tone: 'ok' | 'danger' }>;
@@ -120,14 +121,20 @@ const planLines = (r: RuleResult, upcoming: readonly PlannedItem[], today: DayNu
   });
 };
 
-const toCard = (res: JurisdictionResult, upcoming: readonly PlannedItem[], today: DayNum): Card => ({
+const toCard = (res: JurisdictionResult, upcoming: readonly PlannedItem[], today: DayNum, answeredTies: boolean): Card => ({
   id: res.jurisdiction.id,
   ...(isCustomJurisdiction(res.jurisdiction.id) && { ownRulesFor: [...res.jurisdiction.countries][0] }),
   name: res.jurisdiction.name,
   present: res.results.some((r) => r.status?.present),
   level: res.level,
-  rules: res.results.map((r) => ({ ...ruleLine(r), plans: planLines(r, upcoming, today) })),
+  rules: res.results.map((r) => ({ ...ruleLine(r), plans: planLines(r, upcoming, today), ...tiesLink(r, answeredTies) })),
 });
+
+/** The UK 183-day test can be lowered by your ties: link to the questions */
+const tiesLink = (r: RuleResult, answered: boolean): Pick<RuleLine, 'link'> =>
+  r.rule.id === UK_SRT_RULE && r.applicability === 'applies'
+    ? { link: { label: answered ? 'Your UK ties · Edit' : 'Check your UK ties (they can lower this limit)', href: '/uk-ties' } }
+    : {};
 
 const byPriority = (a: Card, b: Card) =>
   Number(b.present) - Number(a.present) || SEVERITY[b.level] - SEVERITY[a.level] || a.name.localeCompare(b.name);
@@ -139,7 +146,7 @@ export const buildDashboard = (data: AppData, today: DayNum): Dashboard => {
   const { taxResidence, passports } = data.profile;
   if (!taxResidence) return { cards: [], uncovered: [] };
 
-  const js = allJurisdictions(data);
+  const js = allJurisdictions(data, today);
   const profile = { passports, taxResidence };
   const real = actualStays(data.stays); // planned trips only count once you confirm them
   const upcoming = upcomingPlans(data, today);
@@ -148,7 +155,8 @@ export const buildDashboard = (data: AppData, today: DayNum): Dashboard => {
   const relevant = (j: Jurisdiction) =>
     isCustomJurisdiction(j.id) || [...real, ...upcoming.map((p) => p.trip)].some((s) => j.countries.has(s.country));
   const results = evaluateAll(js.filter(relevant), real, profile, today, true);
-  const cards = results.map((r) => toCard(r, upcoming, today)).sort(byPriority);
+  const answeredTies = data.settings.ukTies?.leaver !== undefined;
+  const cards = results.map((r) => toCard(r, upcoming, today, answeredTies)).sort(byPriority);
   const covered = (c: string) => js.some((j) => j.countries.has(c));
   const uncovered = [...new Set(data.stays.map((s) => s.country))]
     .filter((c) => c !== taxResidence && !covered(c))

@@ -92,7 +92,7 @@ export const planReminders = (data: AppData, today: DayNum, nowMs: number): read
   const { taxResidence, passports } = data.profile;
   if (!enabled || !taxResidence) return [];
 
-  const ruleDrafts = evaluateAll(allJurisdictions(data), actualStays(data.stays), { passports, taxResidence }, today).flatMap(
+  const ruleDrafts = evaluateAll(allJurisdictions(data, today), actualStays(data.stays), { passports, taxResidence }, today).flatMap(
     ({ jurisdiction, results }) => results.flatMap((r) => draftsFor(jurisdiction, r, leadDays)),
   );
   return [...ruleDrafts, ...planDrafts(data, today)]
