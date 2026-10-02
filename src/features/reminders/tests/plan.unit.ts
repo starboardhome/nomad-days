@@ -70,6 +70,23 @@ describe('reminder planner', () => {
     assert.deepEqual(planReminders({ ...inSchengen, profile: { taxResidence: 'AE', passports: ['FR'] } }, today, morning), []);
   });
 
+  it('warns before a booked trip that would break a rule, and asks "Did you go?" on the day', () => {
+    const plans = data({
+      stays: [
+        { id: 'fr', country: 'FR', entry: '2026-07-14', exit: '2026-09-27' }, // 76 Schengen days
+        { id: 'es', country: 'ES', entry: '2026-10-20', exit: '2026-11-10', plan: 'booked' },
+        { id: 'pt', country: 'PT', entry: '2026-12-20', exit: '2026-12-27', plan: 'maybe' },
+      ],
+    });
+    assert.deepEqual(summary(planReminders(plans, today, morning)), [
+      '2026-10-13 Your 🇪🇸 Spain trip would break the Schengen Area limit',
+      '2026-10-20 Did you go to 🇪🇸 Spain?',
+      '2026-12-20 Did you go to 🇵🇹 Portugal?',
+    ]);
+    // Planned days don't count yet: no "days to go" countdown for the booked trip
+    assert.ok(planReminders(plans, today, morning).every((r) => !r.title.includes('to go')));
+  });
+
   it('uses stable ids so rescheduling replaces rather than duplicates', () => {
     const a = planReminders(inSchengen, today, morning).map((r) => r.id);
     const b = planReminders(inSchengen, today, morning).map((r) => r.id);

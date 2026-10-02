@@ -12,7 +12,7 @@ import {
 import { JurisdictionSchema, type RawJurisdiction } from '../rules/schema';
 import type { Db } from './db';
 
-type StayRow = { id: string; country: string; entry: string; exit: string | null; note: string | null };
+type StayRow = { id: string; country: string; entry: string; exit: string | null; note: string | null; plan: string | null };
 
 const toStay = (row: StayRow): StayRecord =>
   StayRecordSchema.parse({
@@ -21,6 +21,7 @@ const toStay = (row: StayRow): StayRecord =>
     entry: row.entry,
     ...(row.exit ? { exit: row.exit } : {}),
     ...(row.note ? { note: row.note } : {}),
+    ...(row.plan ? { plan: row.plan } : {}),
   });
 
 // ── Profile ─────────────────────────────────────────────────
@@ -51,16 +52,16 @@ export const saveProfile = async (db: Db, profile: Profile): Promise<void> => {
 
 // ── Stays ───────────────────────────────────────────────────
 export const listStays = async (db: Db): Promise<StayRecord[]> =>
-  (await db.getAllAsync<StayRow>('SELECT id, country, entry, exit, note FROM stays ORDER BY entry DESC, id', [])).map(
+  (await db.getAllAsync<StayRow>('SELECT id, country, entry, exit, note, plan FROM stays ORDER BY entry DESC, id', [])).map(
     toStay,
   );
 
 const writeStay = (db: Db, s: StayRecord) =>
   db.runAsync(
-    `INSERT INTO stays (id, country, entry, exit, note) VALUES (?, ?, ?, ?, ?)
+    `INSERT INTO stays (id, country, entry, exit, note, plan) VALUES (?, ?, ?, ?, ?, ?)
      ON CONFLICT (id) DO UPDATE SET country = excluded.country, entry = excluded.entry,
-       exit = excluded.exit, note = excluded.note`,
-    [s.id, s.country, s.entry, s.exit ?? null, s.note ?? null],
+       exit = excluded.exit, note = excluded.note, plan = excluded.plan`,
+    [s.id, s.country, s.entry, s.exit ?? null, s.note ?? null, s.plan ?? null],
   );
 
 /** Insert or update a stay. Throws if the stay is invalid (e.g. exit before entry). */

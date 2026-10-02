@@ -5,10 +5,12 @@
 import type { AppData } from '../../data/schema';
 import { countryName } from '../../data/countries';
 import { isCustomJurisdiction } from '../../domain/custom';
+import { actualStays } from '../../domain/plan';
 import { evaluateAll, type JurisdictionResult, type RuleResult } from '../../domain/evaluate';
 import { toDayNum, toISO, yearOf, type DayNum } from '../../domain/days';
 import type { Level } from '../../domain/status';
-import { jurisdictions as bundled, resolveJurisdiction, type Jurisdiction } from '../../rules';
+import type { Jurisdiction } from '../../rules';
+import { allJurisdictions } from '../jurisdictions';
 import { formatDate, plural } from '../../ui/format';
 
 export type RuleLine = Readonly<{
@@ -38,10 +40,7 @@ export type Dashboard = Readonly<{
 
 const SEVERITY: Record<Level, number> = { over: 3, blocked: 2, warning: 1, ok: 0 };
 
-export const allJurisdictions = (data: AppData): readonly Jurisdiction[] => [
-  ...bundled,
-  ...data.customJurisdictions.map((j) => resolveJurisdiction(j, {})),
-];
+export { allJurisdictions };
 
 const d = (iso?: string) => (iso ? formatDate(iso) : undefined);
 const compact = (xs: readonly (string | undefined | false)[]) => xs.filter((x): x is string => !!x);
@@ -111,7 +110,7 @@ const byPriority = (a: Card, b: Card) =>
   Number(b.present) - Number(a.present) || SEVERITY[b.level] - SEVERITY[a.level] || a.name.localeCompare(b.name);
 
 export const currentCountry = (data: AppData, today: DayNum): string | undefined =>
-  data.stays.find((s) => !s.exit && toDayNum(s.entry) <= today)?.country;
+  actualStays(data.stays).find((s) => !s.exit && toDayNum(s.entry) <= today)?.country;
 
 export const buildDashboard = (data: AppData, today: DayNum): Dashboard => {
   const { taxResidence, passports } = data.profile;
@@ -122,9 +121,10 @@ export const buildDashboard = (data: AppData, today: DayNum): Dashboard => {
   // Bundled rules only matter where you've been; your own rules always show (you added them for a reason,
   // often before the trip)
   const isOwn = (j: Jurisdiction) => isCustomJurisdiction(j.id);
+  const real = actualStays(data.stays); // planned trips only count once you confirm them
   const results = [
-    ...evaluateAll(js.filter((j) => !isOwn(j)), data.stays, profile, today),
-    ...evaluateAll(js.filter(isOwn), data.stays, profile, today, true),
+    ...evaluateAll(js.filter((j) => !isOwn(j)), real, profile, today),
+    ...evaluateAll(js.filter(isOwn), real, profile, today, true),
   ];
   const cards = results.map(toCard).sort(byPriority);
   const covered = (c: string) => js.some((j) => j.countries.has(c));

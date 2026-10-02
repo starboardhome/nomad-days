@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { Iso2Schema, IsoDateSchema, JurisdictionSchema } from '../rules/schema';
 
+/** Future trips: booked ones count toward each other's limits; maybe ones are what-ifs */
+export const PlanSchema = z.enum(['booked', 'maybe']);
+
 /** One trip into one country, as stored on the device */
 export const StayRecordSchema = z
   .object({
@@ -9,8 +12,10 @@ export const StayRecordSchema = z
     entry: IsoDateSchema,
     exit: IsoDateSchema.optional(), // missing = still there
     note: z.string().max(500).optional(),
+    plan: PlanSchema.optional(), //  missing = a trip that happened (or is happening)
   })
-  .refine((s) => !s.exit || s.exit >= s.entry, { message: 'Exit date is before entry date', path: ['exit'] });
+  .refine((s) => !s.exit || s.exit >= s.entry, { message: 'Exit date is before entry date', path: ['exit'] })
+  .refine((s) => !s.plan || !!s.exit, { message: 'A planned trip needs an end date', path: ['exit'] });
 
 export const ProfileSchema = z.object({
   taxResidence: Iso2Schema.nullable(), // null until onboarding is done
@@ -45,6 +50,7 @@ export const AppDataSchema = z.object({
 });
 
 export type StayRecord = z.infer<typeof StayRecordSchema>;
+export type Plan = z.infer<typeof PlanSchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type AppData = z.infer<typeof AppDataSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;

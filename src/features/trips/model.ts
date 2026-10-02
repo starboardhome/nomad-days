@@ -1,4 +1,4 @@
-import { StayRecordSchema, type StayRecord } from '../../data/schema';
+import { StayRecordSchema, type Plan, type StayRecord } from '../../data/schema';
 import { countryLabel } from '../../data/countries';
 import { toDayNum, type DayNum } from '../../domain/days';
 import { daysInclusive, formatShortDate, plural } from '../../ui/format';
@@ -10,7 +10,12 @@ export type TripDraft = Readonly<{
   entry: string;
   exit?: string; // undefined = still there
   note?: string;
+  plan?: Plan; //   undefined = a trip that happened (or is happening)
 }>;
+
+/** Overlaps only matter between trips of the same kind (maybe trips are alternatives) */
+const comparable = (draft: TripDraft, others: readonly StayRecord[]) =>
+  draft.plan === 'maybe' ? [] : others.filter((o) => o.plan === draft.plan);
 
 export type DraftCheck = Readonly<{ errors: readonly string[]; warnings: readonly string[] }>;
 
@@ -26,16 +31,18 @@ export const checkDraft = (draft: TripDraft, others: readonly StayRecord[], toda
   const errors = [
     !draft.country && 'Choose a country.',
     draft.exit && draft.exit < draft.entry && 'The exit date is before the entry date.',
-    toDayNum(draft.entry) > today && 'The entry date is in the future. Log trips once they’ve started.',
+    !draft.plan && toDayNum(draft.entry) > today && 'The entry date is in the future. Mark the trip as Booked or Maybe to plan it.',
+    draft.plan && !draft.exit && 'Add the date you plan to leave.',
   ].filter((e): e is string => !!e);
 
+  const same = comparable(draft, others);
   const clashes = errors.length
     ? []
-    : others.filter(
+    : same.filter(
         (o) => o.id !== draft.id && o.id !== tripToClose(draft, others)?.id && overlapDays(draft, o, today) > 1,
       ); // 1 shared day = a travel day
   // An older open trip is closed automatically (see tripToClose); only a *later* one is a problem
-  const openElsewhere = !draft.exit && others.some((o) => o.id !== draft.id && !o.exit && o.entry > draft.entry);
+  const openElsewhere = !draft.exit && same.some((o) => o.id !== draft.id && !o.exit && o.entry > draft.entry);
 
   const warnings = [
     ...clashes.map((o) => `Overlaps your ${countryLabel(o.country)} trip by more than a travel day.`),
@@ -50,8 +57,8 @@ export const checkDraft = (draft: TripDraft, others: readonly StayRecord[], toda
  * returns the older open trip, ending on the new trip's entry day (a travel day).
  */
 export const tripToClose = (draft: TripDraft, others: readonly StayRecord[]): StayRecord | undefined => {
-  if (draft.exit) return undefined;
-  const open = others.find((o) => o.id !== draft.id && !o.exit && o.entry <= draft.entry);
+  if (draft.exit || draft.plan) return undefined;
+  const open = others.find((o) => o.id !== draft.id && !o.plan && !o.exit && o.entry <= draft.entry);
   return open ? { ...open, exit: draft.entry } : undefined;
 };
 
@@ -62,7 +69,20 @@ export const toStayRecord = (draft: TripDraft): StayRecord =>
     entry: draft.entry,
     ...(draft.exit ? { exit: draft.exit } : {}),
     ...(draft.note?.trim() ? { note: draft.note.trim() } : {}),
+    ...(draft.plan ? { plan: draft.plan } : {}),
   });
+
+/**
+ * "Yes, I went": the planned trip becomes a real one, and the trip you were on
+ * ends on its first day (a travel day), like logging a move.
+ */
+export const confirmPlanned = (trip: StayRecord, stays: readonly StayRecord[]): StayRecord[] => {
+  const { plan: _plan, ...real } = trip;
+  const open = stays.find((s) => s.id !== trip.id && !s.plan && !s.exit && s.entry <= trip.entry);
+  return [...(open ? [{ ...open, exit: trip.entry }] : []), real];
+};
+
+const PLAN_LABEL: Record<Plan, string> = { booked: 'Booked', maybe: 'Maybe' };
 
 export type TripRow = Readonly<{ id: string; title: string; subtitle: string; ongoing: boolean }>;
 
@@ -73,7 +93,7 @@ export const tripRow = (s: StayRecord, today: DayNum): TripRow => {
   return {
     id: s.id,
     title: countryLabel(s.country),
-    subtitle: `${range} · ${plural(daysInclusive(s.entry, end), 'day')}`,
-    ongoing: !s.exit,
+    subtitle: `${s.plan ? `${PLAN_LABEL[s.plan]} · ` : ''}${range} · ${plural(daysInclusive(s.entry, end), 'day')}`,
+    ongoing: !s.exit && !s.plan,
   };
 };
