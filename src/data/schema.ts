@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { Iso2Schema, IsoDateSchema, JurisdictionSchema } from '../rules/schema';
 
+/** Future trips: booked ones count toward each other's limits; maybe ones are what-ifs */
+export const PlanSchema = z.enum(['booked', 'maybe']);
+
 /** One trip into one country, as stored on the device */
 export const StayRecordSchema = z
   .object({
@@ -9,8 +12,10 @@ export const StayRecordSchema = z
     entry: IsoDateSchema,
     exit: IsoDateSchema.optional(), // missing = still there
     note: z.string().max(500).optional(),
+    plan: PlanSchema.optional(), //  missing = a trip that happened (or is happening)
   })
-  .refine((s) => !s.exit || s.exit >= s.entry, { message: 'Exit date is before entry date', path: ['exit'] });
+  .refine((s) => !s.exit || s.exit >= s.entry, { message: 'Exit date is before entry date', path: ['exit'] })
+  .refine((s) => !s.plan || !!s.exit, { message: 'A planned trip needs an end date', path: ['exit'] });
 
 export const ProfileSchema = z.object({
   taxResidence: Iso2Schema.nullable(), // null until onboarding is done
@@ -26,8 +31,21 @@ export const ReminderSettingsSchema = z.object({
   hour: z.number().int().min(0).max(23), //                   local time to send them
 });
 
+/**
+ * Answers for the UK Statutory Residence Test "sufficient ties" test (unanswered = undefined).
+ * The 90-day and country ties are also worked out from trips.
+ */
+export const UkTiesSchema = z.object({
+  leaver: z.boolean().optional(), //       UK resident in any of the 3 previous tax years
+  family: z.boolean().optional(),
+  accommodation: z.boolean().optional(),
+  work: z.boolean().optional(),
+  ninetyDays: z.boolean().optional(), //  >90 UK days in either of the last 2 tax years (before using the app)
+});
+
 export const SettingsSchema = z.object({
   reminders: ReminderSettingsSchema,
+  ukTies: UkTiesSchema.optional(),
 });
 
 export const defaultSettings = (): Settings => ({
@@ -45,10 +63,12 @@ export const AppDataSchema = z.object({
 });
 
 export type StayRecord = z.infer<typeof StayRecordSchema>;
+export type Plan = z.infer<typeof PlanSchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type AppData = z.infer<typeof AppDataSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;
 export type ReminderSettings = z.infer<typeof ReminderSettingsSchema>;
+export type UkTies = z.infer<typeof UkTiesSchema>;
 
 export const emptyAppData = (): AppData => ({
   schemaVersion: 1,

@@ -6,6 +6,7 @@ import { applyPreset, emptyRuleDraft, toJurisdiction } from '../../rules/model';
 import { buildDashboard, ruleLine } from '../model';
 
 const today = toDayNum('2026-09-28');
+const day = toDayNum;
 
 const withData = (patch: Partial<AppData>): AppData => ({ ...emptyAppData(), ...patch });
 
@@ -19,6 +20,61 @@ const aussieInEurope = withData({
   ],
 });
 
+describe('dashboard: planned trips under tax tests', () => {
+  // A British/Irish passport (UK visitor rule N/A) but UAE tax resident, so the UK tax test applies
+  const uk = withData({
+    profile: { taxResidence: 'AE', passports: ['IE'] },
+    stays: [
+      { id: 'sep', country: 'GB', entry: '2026-09-01', exit: '2026-09-19' }, // 18 nights this tax year
+      { id: 'nov', country: 'GB', entry: '2026-11-10', exit: '2026-11-20', plan: 'booked' }, // 10 more
+      { id: 'may', country: 'GB', entry: '2027-05-01', exit: '2027-05-11', plan: 'maybe' }, // next tax year
+    ],
+  });
+  const taxLine = (d: AppData) => buildDashboard(d, day('2026-10-02')).cards.find((c) => c.id === 'uk')!.rules[1];
+
+  it('adds what each upcoming trip would leave', () => {
+    const line = taxLine(uk);
+    assert.equal(line.headline, '164 days before tax residency');
+    assert.deepEqual(line.plans, [
+      { tone: 'ok', text: 'With your booked trip (10 Nov – 20 Nov): 154 days before tax residency (28 of 183 this tax year)' },
+      {
+        tone: 'ok',
+        text: 'With your maybe trip (1 May 2027 – 11 May 2027): 172 days before tax residency (10 of 183 in the tax year to 5 Apr 2028)',
+      },
+    ]);
+  });
+
+  it('says when a trip would make you tax resident', () => {
+    // 18 nights + 165 from 10 Oct = 183rd night on 23 Mar
+    const long = withData({ ...uk, stays: [uk.stays[0], { id: 'w', country: 'GB', entry: '2026-10-10', exit: '2027-04-05', plan: 'booked' }] });
+    assert.deepEqual(taxLine(long).plans, [
+      { tone: 'danger', text: 'With your booked trip (10 Oct – 5 Apr 2027): tax resident from 23 Mar 2027' },
+    ]);
+  });
+
+  it('uses your UK ties: a leaver with 3 ties is resident after 46 days', () => {
+    const tied = withData({ ...uk, settings: { ...uk.settings, ukTies: { leaver: true, family: true, accommodation: true } } });
+    const line = taxLine(tied);
+    // Family + accommodation, plus the country tie: the UK is where they've spent most midnights this tax year
+    assert.equal(line.label, 'Statutory Residence Test: 46 days with your UK ties');
+    assert.match(line.notes[0], /3 UK ties \(family, accommodation, country\)/);
+    assert.equal(line.headline, '27 days before tax residency'); // 45 - 18
+    assert.equal(line.plans[0].text, 'With your booked trip (10 Nov – 20 Nov): 17 days before tax residency (28 of 46 this tax year)');
+  });
+
+  it("doesn't blame a trip for a tax threshold you've already reached", () => {
+    const resident = withData({ ...uk, settings: { ...uk.settings, ukTies: { leaver: true, family: true, accommodation: true, work: true } } });
+    const line = taxLine(resident); // 5 ties: resident from 16 days, and there have been 18
+    assert.equal(line.headline, 'Tax residency threshold reached');
+    assert.deepEqual(line.plans.filter((p) => p.text.includes('10 Nov')), []);
+  });
+
+  it('shows a country you only plan to visit', () => {
+    const plannedOnly = withData({ ...uk, stays: [uk.stays[1]] });
+    assert.ok(buildDashboard(plannedOnly, day('2026-10-02')).cards.some((c) => c.id === 'uk'));
+  });
+});
+
 describe('dashboard model', () => {
   it('covers a country once the user adds their own rules', () => {
     const thailand = toJurisdiction(applyPreset(emptyRuleDraft('TH'), 'visit60'), '2026-09-28');
@@ -27,6 +83,17 @@ describe('dashboard model', () => {
     const card = dash.cards.find((c) => c.id === 'custom-th');
     assert.equal(card?.ownRulesFor, 'TH');
     assert.equal(dash.cards.find((c) => c.id === 'schengen')?.ownRulesFor, undefined);
+  });
+
+  it('shows your own rules even for countries you have no trips in yet', () => {
+    const own = (c: string) => toJurisdiction(applyPreset(emptyRuleDraft(c), 'visit30'), '2026-09-28');
+    const dash = buildDashboard({ ...aussieInEurope, customJurisdictions: [own('TH'), own('VN')] }, today);
+    const vietnam = dash.cards.find((c) => c.id === 'custom-vn');
+    assert.ok(dash.cards.find((c) => c.id === 'custom-th'));
+    assert.equal(vietnam?.present, false);
+    assert.equal(vietnam?.rules[0].headline, '30 days available');
+    // Bundled rules still only show where you've been (no US card)
+    assert.equal(dash.cards.some((c) => c.id === 'us'), false);
   });
 
   it('shows nothing until onboarding is complete', () => {

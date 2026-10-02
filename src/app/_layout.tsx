@@ -43,6 +43,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name="trip/[id]" options={{ presentation: 'modal', title: 'Trip' }} />
+        <Stack.Screen name="uk-ties" options={{ presentation: 'modal', title: 'UK residence ties' }} />
         <Stack.Screen name="rules/[country]" options={{ presentation: 'modal', title: 'Your rules' }} />
         <Stack.Screen name="backup/export" options={{ presentation: 'modal', title: 'Export backup' }} />
         <Stack.Screen name="backup/restore" options={{ presentation: 'modal', title: 'Restore backup' }} />

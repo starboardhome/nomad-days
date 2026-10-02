@@ -12,7 +12,7 @@ xcrun simctl boot "$DEVICE"; xcrun simctl bootstatus "$DEVICE" -b >/dev/null
 [ -d "$APP" ] || { echo "No app bundle at $APP" | annotate error "iOS: build output missing"; exit 1; }
 echo "Installing $APP ($(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP/Info.plist"))"
 xcrun simctl install "$DEVICE" "$APP" || { echo "simctl install failed for $APP" | annotate error "iOS: install failed"; exit 1; }
-xcrun simctl spawn "$DEVICE" log stream --level error --style compact --predicate 'process CONTAINS "nomad"' > app-errors.log 2>&1 &
+xcrun simctl spawn "$DEVICE" log stream --level error --style compact --predicate 'process CONTAINS[c] "nomad"' > app-errors.log 2>&1 &
 LOGPID=$!
 xcrun simctl launch "$DEVICE" "$BUNDLE_ID" || true
 sleep 30

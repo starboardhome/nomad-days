@@ -31,6 +31,8 @@ export const MIGRATIONS: readonly string[] = [
      key TEXT PRIMARY KEY,
      value TEXT NOT NULL
    );`,
+  // v3: planned trips ('booked' | 'maybe'; NULL = a trip that happened)
+  `ALTER TABLE stays ADD COLUMN plan TEXT;`,
 ];
 
 export const schemaVersion = async (db: Db): Promise<number> =>

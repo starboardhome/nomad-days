@@ -51,10 +51,25 @@ describe('migrations', () => {
     const db = nodeDb();
     await db.execAsync(MIGRATIONS[0]);
     await db.execAsync('PRAGMA user_version = 1');
-    await saveStay(db, { id: 'kept', country: 'FR', entry: '2025-01-01' });
+    // Written the way the v1 app did (today's repo writes columns that v1 doesn't have yet)
+    await db.runAsync("INSERT INTO stays (id, country, entry) VALUES ('kept', 'FR', '2025-01-01')", []);
     await migrate(db);
     assert.deepEqual((await listStays(db)).map((s) => s.id), ['kept']);
     assert.deepEqual(await getSettings(db), defaultSettings());
+  });
+
+  it('upgrades a v2 database and stores planned trips', async () => {
+    const db = nodeDb();
+    for (const sql of MIGRATIONS.slice(0, 2)) await db.execAsync(sql);
+    await db.execAsync('PRAGMA user_version = 2');
+    await db.runAsync("INSERT INTO stays (id, country, entry) VALUES ('old', 'FR', '2025-01-01')", []);
+    await migrate(db);
+    await saveStay(db, { id: 'trip', country: 'TH', entry: '2027-01-10', exit: '2027-02-01', plan: 'maybe' });
+    assert.deepEqual(await listStays(db), [
+      { id: 'trip', country: 'TH', entry: '2027-01-10', exit: '2027-02-01', plan: 'maybe' },
+      { id: 'old', country: 'FR', entry: '2025-01-01' },
+    ]);
+    await assert.rejects(saveStay(db, { id: 'x', country: 'TH', entry: '2027-01-10', plan: 'booked' }), /needs an end date/);
   });
 
   it('refuses a database from a newer app version', async () => {

@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { LevelBadge, levelText } from '../../../ui/LevelBadge';
@@ -31,6 +32,17 @@ export const RuleRow = ({ line }: { line: RuleLine }) => (
         {d}
       </Text>
     ))}
+    {line.plans.map((p) => (
+      <Text key={p.text} className={`text-sm font-medium ${p.tone === 'danger' ? 'text-danger dark:text-red-300' : 'text-brand dark:text-brand-dark'}`}>
+        {p.tone === 'danger' ? '✗ ' : '→ '}
+        {p.text}
+      </Text>
+    ))}
+    {line.link ? (
+      <Pressable onPress={() => router.push(line.link!.href)} accessibilityRole="button">
+        <Text className="text-sm font-semibold text-brand dark:text-brand-dark">{line.link.label}</Text>
+      </Pressable>
+    ) : null}
     <Notes notes={line.notes} />
   </View>
 );
