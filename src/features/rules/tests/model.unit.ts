@@ -45,11 +45,12 @@ describe('custom rule form checks', () => {
     assert.deepEqual(errors(thai({ source: ' https://www.immigration.go.th/ ' })), []);
   });
 
-  it('warns about replacing saved rules and overlapping bundled ones', () => {
+  it('warns about replacing saved rules and refuses countries with built-in rules', () => {
     const saved = [toJurisdiction(thai(), today)];
     assert.equal(checkRuleDraft(thai(), saved).warnings.length, 1);
     assert.deepEqual(checkRuleDraft(thai(), saved, 'custom-th').warnings, []); // editing the same one
-    assert.match(checkRuleDraft(thai({ country: 'FR' }), []).warnings[0], /Schengen/);
+    assert.match(checkRuleDraft(thai({ country: 'FR' }), []).errors[0], /France already has built-in rules \(Schengen Area\)/);
+    assert.equal(checkRuleDraft(thai({ country: 'GB' }), []).errors.length, 1);
   });
 
   it('parses counts strictly', () => {

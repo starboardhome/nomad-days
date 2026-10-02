@@ -55,6 +55,7 @@ export const CountryPicker = ({ visible, title, selected, onPick, onClose, multi
             value={query}
             onChangeText={setQuery}
             placeholder="Search countries"
+            autoFocus // type straight away instead of scrolling 250 countries
             autoCorrect={false}
             autoCapitalize="none"
             clearButtonMode="while-editing"

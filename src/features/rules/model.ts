@@ -85,6 +85,9 @@ const isMonthDay = (s: string) => {
   return !!m && +m[1] >= 1 && +m[1] <= 12 && +m[2] >= 1 && +m[2] <= DAYS_IN_MONTH[+m[1] - 1];
 };
 
+/** Built-in jurisdictions covering a country (own rules would duplicate them) */
+const bundledFor = (country?: string) => (country ? jurisdictionsForCountry(country).map((j) => j.name) : []);
+
 /** Errors block saving; warnings are shown but allowed */
 export const checkRuleDraft = (
   draft: RuleDraft,
@@ -104,15 +107,15 @@ export const checkRuleDraft = (
     draft.tax && (!threshold || threshold > 366) && 'Enter a tax-days threshold between 1 and 366.',
     draft.tax && !isMonthDay(draft.taxYearStart) && 'Choose when the tax year starts.',
     draft.source.trim() && !/^https:\/\/[^\s/]+\.[^\s]+$/.test(draft.source.trim()) && 'The source link must start with https://',
+    bundledFor(draft.country).length > 0 &&
+      `${countryName(draft.country!)} already has built-in rules (${bundledFor(draft.country).join(', ')}). Your own rules are for countries the app doesn’t cover.`,
   ].filter((e): e is string => !!e);
 
   const c = draft.country;
   const replaces = c && customJurisdictionId(c) !== editingId && saved.some((j) => j.id === customJurisdictionId(c));
-  const bundled = c ? jurisdictionsForCountry(c).map((j) => j.name) : [];
-  const warnings = [
-    replaces && `You already have rules for ${countryLabel(c)}. Saving replaces them.`,
-    bundled.length > 0 && `${countryName(c!)} is already covered by ${bundled.join(', ')}. Both will be checked.`,
-  ].filter((w): w is string => !!w);
+  const warnings = [replaces && `You already have rules for ${countryLabel(c)}. Saving replaces them.`].filter(
+    (w): w is string => !!w,
+  );
 
   return { errors, warnings };
 };
