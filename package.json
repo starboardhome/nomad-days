@@ -62,6 +62,7 @@
     "dev": "expo start --dev-client --offline",
     "launch:ios": "bash scripts/dev/launch-check.sh ios",
     "launch:android": "bash scripts/dev/launch-check.sh android",
+    "screenshots": "node scripts/dev/store-screenshots.cjs",
     "rules:gen": "tsx scripts/rules-gen.ts",
     "rules:check": "tsx scripts/rules-check.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
