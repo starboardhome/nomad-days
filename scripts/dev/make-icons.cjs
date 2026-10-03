@@ -1,39 +1,33 @@
 /**
- * Generates the placeholder app icon set from one SVG mark (calendar with "today" highlighted).
+ * Generates the app icon set from one SVG mark: assets/source/mark.svg.
  *   node scripts/dev/make-icons.cjs
- * Renders with Playwright's Chromium (no image libraries needed). Replace when there's a real design.
+ * The mark is on a 1024 canvas with a transparent background, in two groups: `calendar` (body and rings)
+ * and `today` (the star), which becomes a hole in the one-colour Android icon.
+ * Renders with Playwright's Chromium (no image libraries needed).
  */
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { chromium } = require(require.resolve('playwright', { paths: [execSync('npm root -g').toString().trim()] }));
 
-const TEAL = '#0F766E', TEAL_LIGHT = '#14B8A6', INK = '#134E4A', MINT = '#99F6E4', HEADER = '#CCFBF1', AMBER = '#F59E0B';
+const TEAL = '#0F766E', TEAL_LIGHT = '#14B8A6';
 const GRADIENT = `<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${TEAL_LIGHT}"/><stop offset="1" stop-color="${TEAL}"/></linearGradient>`;
-const DAYS = [32, 44, 56, 68].flatMap((x) => [52, 62, 72].map((y) => [x, y]));
-const TODAY = [56, 62];
 
-/** The mark in a 100×100 box (bbox ≈ x 22–78, y 20–80), in colour or as a one-colour silhouette */
-const mark = (mono = false) => {
-  const fg = '#fff';
-  const dots = DAYS.map(([x, y]) =>
-    x === TODAY[0] && y === TODAY[1]
-      ? `<circle cx="${x}" cy="${y}" r="4.6" fill="${mono ? '#000' : AMBER}"/>`
-      : `<circle cx="${x}" cy="${y}" r="2.6" fill="${mono ? '#000' : MINT}"/>`,
-  ).join('');
-  const body = `
-    <rect x="22" y="26" width="56" height="54" rx="9" fill="${fg}"/>
-    <path d="M22 35a9 9 0 0 1 9-9h38a9 9 0 0 1 9 9v7H22z" fill="${mono ? '#000' : HEADER}"/>
-    <rect x="33" y="19" width="6" height="14" rx="3" fill="${mono ? fg : INK}"/>
-    <rect x="61" y="19" width="6" height="14" rx="3" fill="${mono ? fg : INK}"/>`;
-  // Silhouette: black parts become holes
-  return mono
-    ? `<mask id="m"><rect width="100" height="100" fill="#000"/>${body}${dots}</mask><rect width="100" height="100" fill="#fff" mask="url(#m)"/>`
-    : body + dots;
-};
+const source = fs.readFileSync(path.join(__dirname, '../../assets/source/mark.svg'), 'utf8');
+const group = (id) => new RegExp(`<g id="${id}">([\\s\\S]*?)</g>`).exec(source)[1];
+const sourceDefs = /<defs>([\s\S]*?)<\/defs>/.exec(source)?.[1] ?? '';
+const recolour = (shapes, colour) => shapes.replace(/fill="[^"]*"/g, `fill="${colour}"`);
+// Source bbox (x 158–865, y 129–889 of 1024) mapped into a 100×100 box: x ≈ 21.6–78.4, y 19–80
+const FIT = 'translate(50 49.5) scale(0.08026) translate(-511.5 -509)';
 
-const svg = (size, inner, defs = '') =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100"><defs>${GRADIENT}${defs}</defs>${inner}</svg>`;
+/** The mark in a 100×100 box, in colour or as a one-colour silhouette with the star cut out */
+const mark = (mono = false) =>
+  mono
+    ? `<mask id="m"><rect width="100" height="100" fill="#000"/><g transform="${FIT}">${recolour(group('calendar'), '#fff')}${recolour(group('today'), '#000')}</g></mask><rect width="100" height="100" fill="#fff" mask="url(#m)"/>`
+    : `<g transform="${FIT}">${group('calendar')}${group('today')}</g>`;
+
+const svg = (size, inner) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100"><defs>${GRADIENT}${sourceDefs}</defs>${inner}</svg>`;
 /** Mark scaled about the centre (s < 1 adds padding) */
 const scaled = (s, inner) => `<g transform="translate(50 50) scale(${s}) translate(-50 -50)">${inner}</g>`;
 
@@ -67,7 +61,7 @@ const outputs = {
   fs.mkdirSync(path.join(icon, 'Assets'));
   fs.writeFileSync(
     path.join(icon, 'Assets', 'calendar.svg'),
-    `<svg xmlns="http://www.w3.org/2000/svg" width="560" height="600" viewBox="22 19 56 61">${mark()}</svg>\n`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="568" height="610" viewBox="21.6 19 56.8 61"><defs>${sourceDefs}</defs>${mark()}</svg>\n`,
   );
   fs.writeFileSync(
     path.join(icon, 'icon.json'),
