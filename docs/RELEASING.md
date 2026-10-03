@@ -60,15 +60,15 @@ Screens and captions are in `SHOTS` in `scripts/dev/store-screenshots.cjs`; the 
 The recipe is [`docs/fdroid/io.github.starboardhome.nomaddays.yml`](fdroid/io.github.starboardhome.nomaddays.yml). It follows the pattern of other Expo apps in fdroiddata:
 - Node 24 from nodejs.org, pinned by sha256.
 - Expo modules built from source (`buildFromSource`) instead of their prebuilt AARs.
-- The React Native Gradle plugin moved from JDK 17 to 21 (the build server's JDK).
+- JDK 17 targets moved to 21 (the build server's JDK). That covers the React Native Gradle plugin and every module's `build.gradle` and `build.gradle.kts`. Modules that pin Kotlin's `jvmTarget` (`react-native-worklets`, `react-native-reanimated`) otherwise fail with "Inconsistent JVM Target Compatibility".
 - `expo prebuild`, then the signing config removed so F-Droid can sign.
 - NDK `27.1.12297006`, matching React Native's.
 
 What has been checked, and how to check it again after dependency upgrades:
-- `fdroid lint` passes, and `fdroid rewritemeta` leaves the file unchanged (canonical format).
+- `fdroid lint` passes, and `fdroid rewritemeta` leaves the file unchanged (canonical format). fdroiddata CI runs fdroidserver from `master` with ruamel.yaml 0.18, which wraps long lines differently from the 2.4.5 release, so check the format with `pip install git+https://gitlab.com/fdroid/fdroidserver.git ruamel.yaml==0.18.10`.
 - The prebuild steps run cleanly on a checkout. Every `sed` matches, and `android/app/build.gradle` comes out with no `signingConfig`.
 - F-Droid's source scanner reports 0 problems. It deletes 137 prebuilt files under `node_modules` (Expo AARs and JARs, the optional libSQL and sqlite-vec libraries, and the dev-only esbuild and dotslash). It ignores the Hermes compiler and four Gradle files that point at React Native's local Maven repository.
-- Not yet run: the Gradle build itself. The fdroiddata merge request pipeline runs `fdroid build`, so watch its result.
+- The merge request pipeline runs `fdroid build`. Its first run reached Gradle and failed on the worklets JVM target, which is now fixed.
 
 ### Opening the merge request
 

@@ -5,7 +5,6 @@ AuthorName: Starboard Home
 WebSite: https://starboardhome.github.io/nomad-days/
 SourceCode: https://github.com/starboardhome/nomad-days
 IssueTracker: https://github.com/starboardhome/nomad-days/issues
-Changelog: https://github.com/starboardhome/nomad-days/tree/HEAD/fastlane/metadata/android/en-US/changelogs
 
 AutoName: Nomad Days
 
@@ -31,8 +30,9 @@ Builds:
       - sdkmanager 'cmake;3.22.1'
       - sed -i -e '/JavaVersion\|jvmToolchain/s/17/21/' node_modules/@react-native/gradle-plugin/*/build.gradle.kts
         node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/utils/JdkConfiguratorUtils.kt
-      - find node_modules -path '*/android/build.gradle' -exec sed -i -e "s/jvmTarget
-        = '17'/jvmTarget = '21'/" -e '/JavaVersion/s/17/21/' {} +
+      - find node_modules -path '*/android/build.gradle*' -exec sed -i -e "s/jvmTarget
+        = '17'/jvmTarget = '21'/" -e 's/JvmTarget.fromTarget("17")/JvmTarget.fromTarget("21")/'
+        -e 's/JvmTarget.JVM_17/JvmTarget.JVM_21/' -e '/JavaVersion/s/17/21/' {} +
       - npx expo prebuild --platform android --no-install
       - sed -i -e '/signingConfig /d' android/app/build.gradle
       - printf '\norg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=2g\norg.gradle.workers.max=2\n'
