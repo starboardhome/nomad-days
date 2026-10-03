@@ -35,8 +35,8 @@ Versions come from `app.json` (`appVersionSource: local`), so bump `version`, `a
 - [ ] Developer name for the store pages
 - [x] Publish `docs/PRIVACY.md` on GitHub Pages (needs Pages enabled once: Settings → Pages → Source: GitHub Actions)
 - [x] `eas.json` with `development`, `preview` and `production` profiles
-- [ ] Link the EAS project: `npx eas-cli@latest init` (adds `extra.eas.projectId` to app.json)
-- [ ] Make the repository public (F-Droid only builds public source)
+- [x] Link the EAS project (`npx eas-cli@latest init`): project `@starboardhome/nomad-days`
+- [x] Make the repository public (F-Droid only builds public source)
 - [ ] Merge request to <https://gitlab.com/fdroid/fdroiddata> with the recipe below
 
 ## F-Droid recipe (draft, untested)
