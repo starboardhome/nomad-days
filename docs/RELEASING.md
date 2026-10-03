@@ -8,6 +8,8 @@
 | Name | Nomad Days |
 | Licence | GPL-3.0-or-later |
 | Support | GitHub Issues |
+| Store text | `fastlane/metadata/android/en-US/` (title, short and full description). For the App Store, paste the full description without the `<b>` tags |
+| Export compliance | `ios.config.usesNonExemptEncryption: false` in `app.json`: encryption only protects the user's own data (exempt), so App Store Connect doesn't ask on each build |
 | Privacy policy | <https://starboardhome.github.io/nomad-days/privacy/>, published from [`docs/PRIVACY.md`](PRIVACY.md) by `.github/workflows/pages.yml`. Use this URL in the store listings |
 
 ## Each release

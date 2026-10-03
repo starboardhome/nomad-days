@@ -1,5 +1,7 @@
 Nomad Days counts your days abroad so you stay within visa-free limits and tax-residency thresholds.
 
+<b>Estimates only, not legal or tax advice.</b> Rules change, so check official sources before you travel.
+
 Log your trips (country, arrival and departure). The app shows, for each region you've visited:
 
 * days used and days left
@@ -21,5 +23,3 @@ You can add your own rules for countries that aren't bundled yet: a limit per vi
 * Backups are encrypted files that you export and keep, protected by a passphrase only you know
 
 Reminders are scheduled on the device and don't use Google services.
-
-Estimates only. This is not legal or tax advice. Rules change, so check official sources before you travel.
