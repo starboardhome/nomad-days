@@ -40,7 +40,7 @@ Versions come from `app.json` (`appVersionSource: local`), so bump `version`, `a
 - [x] `eas.json` with `development`, `preview` and `production` profiles
 - [x] Link the EAS project (`npx eas-cli@latest init`): project `@starboardhome/nomad-days`
 - [x] Make the repository public (F-Droid only builds public source)
-- [ ] Merge request to <https://gitlab.com/fdroid/fdroiddata> with the recipe below
+- [ ] Merge request to <https://gitlab.com/fdroid/fdroiddata> (see [F-Droid](#f-droid))
 
 ## Store screenshots
 
@@ -55,48 +55,30 @@ Versions come from `app.json` (`appVersionSource: local`), so bump `version`, `a
 
 Screens and captions are in `SHOTS` in `scripts/dev/store-screenshots.cjs`; the demo data is `src/features/demo/demoData.ts`. Re-run after UI changes. The captures come from the web build, which closely matches the apps; for pixel-exact native captures, use **Settings → Developer → Load demo data** in a debug build and screenshot the simulator.
 
-## F-Droid recipe (draft, untested)
+## F-Droid
 
-F-Droid builds from source on its own servers, so the recipe has to reproduce what `native.yml` does: install Node, `npm ci`, `expo prebuild`, then run Gradle. Test it locally with `fdroid build -v -l io.github.starboardhome.nomaddays` (from a checkout of fdroiddata, using fdroidserver) before opening the merge request.
+The recipe is [`docs/fdroid/io.github.starboardhome.nomaddays.yml`](fdroid/io.github.starboardhome.nomaddays.yml). It follows the pattern of other Expo apps in fdroiddata:
+- Node 24 from nodejs.org, pinned by sha256.
+- Expo modules built from source (`buildFromSource`) instead of their prebuilt AARs.
+- The React Native Gradle plugin moved from JDK 17 to 21 (the build server's JDK).
+- `expo prebuild`, then the signing config removed so F-Droid can sign.
+- NDK `27.1.12297006`, matching React Native's.
 
-`metadata/io.github.starboardhome.nomaddays.yml`:
+What has been checked, and how to check it again after dependency upgrades:
+- `fdroid lint` passes, and `fdroid rewritemeta` leaves the file unchanged (canonical format).
+- The prebuild steps run cleanly on a checkout. Every `sed` matches, and `android/app/build.gradle` comes out with no `signingConfig`.
+- F-Droid's source scanner reports 0 problems. It deletes 137 prebuilt files under `node_modules` (Expo AARs and JARs, the optional libSQL and sqlite-vec libraries, and the dev-only esbuild and dotslash). It ignores the Hermes compiler and four Gradle files that point at React Native's local Maven repository.
+- Not yet run: the Gradle build itself. The fdroiddata merge request pipeline runs `fdroid build`, so watch its result.
 
-```yaml
-Categories:
-  - Travel
-License: GPL-3.0-or-later
-AuthorName: Starboard Home
-WebSite: https://starboardhome.github.io/nomad-days/
-SourceCode: https://github.com/starboardhome/nomad-days
-IssueTracker: https://github.com/starboardhome/nomad-days/issues
-Changelog: https://github.com/starboardhome/nomad-days/releases
+### Opening the merge request
 
-AutoName: Nomad Days
+1. Fork <https://gitlab.com/fdroid/fdroiddata> on GitLab and clone your fork.
+2. Create a branch named `io.github.starboardhome.nomaddays` and copy the recipe to `metadata/io.github.starboardhome.nomaddays.yml`.
+3. Run `fdroid lint io.github.starboardhome.nomaddays` and `fdroid rewritemeta io.github.starboardhome.nomaddays`. Install the tools with `pip install fdroidserver`, ideally in a virtualenv.
+4. Commit with the message `New app: Nomad Days`, push, and open the merge request using the **App inclusion** template.
+5. If the pipeline's build fails, fix the recipe on the branch. Mirror any fix back into `docs/fdroid/`.
 
-RepoType: git
-Repo: https://github.com/starboardhome/nomad-days.git
-
-Builds:
-  - versionName: 1.0.0
-    versionCode: 1
-    commit: v1.0.0
-    sudo:
-      - apt-get update
-      - apt-get install -y nodejs npm openjdk-17-jdk-headless
-    init: npm ci
-    prebuild: npx expo prebuild --platform android --no-install
-    subdir: android/app
-    gradle:
-      - yes
-
-AutoUpdateMode: Version
-UpdateCheckMode: Tags
-UpdateCheckData: app.json|"versionCode":\s*(\d+)|app.json|"version":\s*"([^"]+)"
-CurrentVersion: 1.0.0
-CurrentVersionCode: 1
-```
-
-Expect the F-Droid reviewers to ask about the following:
-- **Node version:** Debian's `nodejs` may be older than the Node 24 we use. We may need to install Node another way in `sudo`.
-- **Prebuilt binaries** from npm packages (for example Hermes and the React Native prebuilts). F-Droid may ask for these to be built from source or scanned. See `scandelete` and `scanignore` in the F-Droid docs.
+Expect the reviewers to ask about the following:
+- **OpenSSL for SQLCipher:** it comes prebuilt from Maven Central (`io.github.ronickg:openssl`). Maven Central is an allowed repository, but they may ask.
+- **React Native's own artifacts** (`react-android`, `hermes-android`) also come from Maven Central, as in other React Native apps on F-Droid.
 - **Reproducible builds:** if we want F-Droid to ship our signed APK, add `Binaries:` and `AllowedAPKSigningKeys:` once our own release APK builds identically.

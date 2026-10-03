@@ -11,10 +11,23 @@ Log your trips (country, arrival and departure). The app shows, for each region 
 <b>Rules included</b>
 
 * Schengen Area: 90 days in any 180
-* United Kingdom: up to 6 months per visit, and 183 days in the tax year (Statutory Residence Test)
+* United Kingdom: up to 6 months per visit, and the Statutory Residence Test for each tax year (6 April to 5 April)
 * United States: 90 days per entry (Visa Waiver Program), and the substantial presence test
 
 You can add your own rules for countries that aren't bundled yet: a limit per visit, a rolling window (for example 90 days in 180), or a tax-days threshold.
+
+<b>Plan ahead</b>
+
+Add future trips as Booked or Maybe and see straight away whether they fit:
+
+* the first day a trip would break a rule, or how many days you'd have to spare
+* how many tax days you'd have left in each country after the trip
+* Booked trips count toward each other; a Maybe trip is checked on its own, so you can try ideas without affecting anything else
+* a reminder a week before a booked trip that wouldn't fit, and "Did you go?" on the day it starts, so your log stays accurate
+
+<b>UK sufficient ties</b>
+
+Spending fewer than 183 days in the UK can still make you UK tax resident if you have enough UK ties. Answer a few yes/no questions (family, accommodation, work, and whether you were UK resident before), each with a plain-English explanation. The app also works out the 90-day and country ties from the trips you log and shows the number of UK days that would make you resident this tax year.
 
 <b>Private by design</b>
 

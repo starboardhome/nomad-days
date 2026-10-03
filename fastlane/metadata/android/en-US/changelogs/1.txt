@@ -1,1 +1,1 @@
-First release: trip log, Schengen/UK/US day counts, your own rules for other countries, local reminders and encrypted backups.
+First release: trip log, Schengen/UK/US day counts, planned trips (Booked/Maybe) with fit checks, UK sufficient ties, your own rules for other countries, local reminders and encrypted backups.
