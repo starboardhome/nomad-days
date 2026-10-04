@@ -18,7 +18,7 @@ export const UkTiesSection = () => {
     <Section title="UK tax residence">
       <Row
         title="Your UK ties"
-        subtitle={t ? `${tiesSummary(t)} · resident after ${t.threshold} days` : 'Answer 5 yes/no questions: ties can lower the 183-day limit'}
+        subtitle={t ? `${tiesSummary(t)} · resident from ${t.threshold} days` : 'Answer 5 yes/no questions: ties can lower the 183-day limit'}
         onPress={() => router.push('/uk-ties')}
       />
     </Section>

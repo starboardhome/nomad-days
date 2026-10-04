@@ -1,8 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, Text, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { searchCountries, type Country } from '../data/countries';
+import { Button } from './Button';
 import { TextField } from './Field';
 
 type Props = Readonly<{
@@ -27,7 +28,7 @@ const CountryItem = ({ country, checked, onPress }: { country: Country; checked:
   </Pressable>
 );
 
-/** Full-screen searchable country list */
+/** Full-screen searchable country list. Multi-select adds a Done button at the bottom. */
 export const CountryPicker = ({ visible, title, selected, onPick, onClose, multiple = false }: Props) => {
   const [query, setQuery] = useState('');
   const results = useMemo(() => searchCountries(query), [query]);
@@ -43,7 +44,12 @@ export const CountryPicker = ({ visible, title, selected, onPick, onClose, multi
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={close}>
-      <View className="flex-1 bg-neutral-50 dark:bg-neutral-950" style={{ paddingBottom: insets.bottom }}>
+      <KeyboardAvoidingView
+        behavior="padding"
+        className="flex-1 bg-neutral-50 dark:bg-neutral-950"
+        // Android draws the modal edge to edge, under the status bar; an iOS page sheet already starts below it
+        style={{ paddingTop: Platform.OS === 'android' ? insets.top : 0, paddingBottom: multiple ? 0 : insets.bottom }}
+      >
         <View className="flex-row items-center justify-between px-4 pb-2 pt-4">
           <Text className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">{title}</Text>
           <Pressable onPress={close} accessibilityRole="button" className="px-2 py-1">
@@ -66,12 +72,21 @@ export const CountryPicker = ({ visible, title, selected, onPick, onClose, multi
           data={results}
           keyExtractor={(c) => c.code}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           initialNumToRender={20}
           renderItem={({ item }) => (
             <CountryItem country={item} checked={selected.includes(item.code)} onPress={() => pick(item.code)} />
           )}
         />
-      </View>
+        {multiple ? (
+          <View
+            className="border-t border-neutral-200 px-4 pt-3 dark:border-neutral-800"
+            style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+          >
+            <Button label={selected.length ? `Done · ${selected.length} selected` : 'Done'} onPress={close} />
+          </View>
+        ) : null}
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

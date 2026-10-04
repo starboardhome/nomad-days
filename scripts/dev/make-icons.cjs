@@ -10,8 +10,8 @@ const path = require('path');
 const { execSync } = require('child_process');
 const { chromium } = require(require.resolve('playwright', { paths: [execSync('npm root -g').toString().trim()] }));
 
-const TEAL = '#0F766E', TEAL_LIGHT = '#14B8A6';
-const GRADIENT = `<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${TEAL_LIGHT}"/><stop offset="1" stop-color="${TEAL}"/></linearGradient>`;
+// Icon background (the splash screen keeps the brand teal, set in app.json)
+const BACKGROUND = '#FFFFFF';
 
 const source = fs.readFileSync(path.join(__dirname, '../../assets/source/mark.svg'), 'utf8');
 const group = (id) => new RegExp(`<g id="${id}">([\\s\\S]*?)</g>`).exec(source)[1];
@@ -27,18 +27,18 @@ const mark = (mono = false) =>
     : `<g transform="${FIT}">${group('calendar')}${group('today')}</g>`;
 
 const svg = (size, inner) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100"><defs>${GRADIENT}${sourceDefs}</defs>${inner}</svg>`;
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100"><defs>${sourceDefs}</defs>${inner}</svg>`;
 /** Mark scaled about the centre (s < 1 adds padding) */
 const scaled = (s, inner) => `<g transform="translate(50 50) scale(${s}) translate(-50 -50)">${inner}</g>`;
 
 const assets = path.join(__dirname, '../../assets');
 const outputs = {
-  'images/icon.png': svg(1024, `<rect width="100" height="100" fill="url(#bg)"/>${scaled(1.2, mark())}`),
-  'images/favicon.png': svg(48, `<rect width="100" height="100" rx="22" fill="url(#bg)"/>${scaled(1.35, mark())}`),
+  'images/icon.png': svg(1024, `<rect width="100" height="100" fill="${BACKGROUND}"/>${scaled(1.2, mark())}`),
+  'images/favicon.png': svg(48, `<rect width="100" height="100" rx="22" fill="${BACKGROUND}"/>${scaled(1.35, mark())}`),
   // Adaptive icons: launchers show the middle 66% of the layer, masked to a circle or squircle,
   // so the whole mark must fit inside a circle of ~60% of the canvas
   'images/android-icon-foreground.png': svg(512, scaled(0.66, mark())),
-  'images/android-icon-background.png': svg(512, `<rect width="100" height="100" fill="url(#bg)"/>`),
+  'images/android-icon-background.png': svg(512, `<rect width="100" height="100" fill="${BACKGROUND}"/>`),
   'images/android-icon-monochrome.png': svg(432, scaled(0.66, mark(true))),
   'images/splash-icon.png': svg(512, scaled(1.6, mark())),
 };
@@ -67,7 +67,7 @@ const outputs = {
     path.join(icon, 'icon.json'),
     JSON.stringify(
       {
-        fill: { 'automatic-gradient': 'extended-srgb:0.05882,0.46275,0.43137,1.00000' }, // TEAL
+        fill: { solid: 'extended-srgb:1.00000,1.00000,1.00000,1.00000' }, // BACKGROUND
         groups: [
           {
             layers: [{ 'image-name': 'calendar.svg', name: 'calendar', position: { scale: 1, 'translation-in-points': [0, 0] } }],
