@@ -40,7 +40,7 @@ Versions come from `app.json` (`appVersionSource: local`), so bump `version`, `a
 - [x] `eas.json` with `development`, `preview` and `production` profiles
 - [x] Link the EAS project (`npx eas-cli@latest init`): project `@starboardhome/nomad-days`
 - [x] Make the repository public (F-Droid only builds public source)
-- [ ] Merge request to <https://gitlab.com/fdroid/fdroiddata> (see [F-Droid](#f-droid))
+- [x] Merge request to fdroiddata: [fdroid/fdroiddata!51068](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51068). Its pipeline passes; it's waiting for F-Droid review (see [F-Droid](#f-droid))
 
 ## Store screenshots
 
@@ -68,9 +68,11 @@ What has been checked, and how to check it again after dependency upgrades:
 - `fdroid lint` passes, and `fdroid rewritemeta` leaves the file unchanged (canonical format). fdroiddata CI runs fdroidserver from `master` with ruamel.yaml 0.18, which wraps long lines differently from the 2.4.5 release, so check the format with `pip install git+https://gitlab.com/fdroid/fdroidserver.git ruamel.yaml==0.18.10`.
 - The prebuild steps run cleanly on a checkout. Every `sed` matches, and `android/app/build.gradle` comes out with no `signingConfig`.
 - F-Droid's source scanner reports 0 problems. It deletes 137 prebuilt files under `node_modules` (Expo AARs and JARs, the optional libSQL and sqlite-vec libraries, and the dev-only esbuild and dotslash). It ignores the Hermes compiler and four Gradle files that point at React Native's local Maven repository.
-- The merge request pipeline runs `fdroid build`. Its first run reached Gradle and failed on the worklets JVM target, which is now fixed.
+- **`fdroid build` passes** on F-Droid's CI for `v1.0.0` (merge request pipeline, 4 October 2026), and all 9 jobs pass. The scanner warns about two harmless files, an icon font and a Windows DLL that ships with the Hermes compiler; these don't block the build. Each successful pipeline also produces a signed test APK in the `fdroid build` job's artifacts.
 
 ### Opening the merge request
+
+Already done for 1.0.0 ([fdroid/fdroiddata!51068](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51068), from the fork `starboardhome/nomad-days` on GitLab). Later releases need no new merge request: F-Droid finds new `v*` tags (`UpdateCheckMode: Tags`) and adds the build itself. Use these steps only if the recipe has to change.
 
 1. Fork <https://gitlab.com/fdroid/fdroiddata> on GitLab and clone your fork.
 2. Create a branch named `io.github.starboardhome.nomaddays` and copy the recipe to `metadata/io.github.starboardhome.nomaddays.yml`.
