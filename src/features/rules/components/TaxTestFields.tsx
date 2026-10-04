@@ -11,7 +11,7 @@ export const TaxTestFields = ({ draft, update }: Props) => (
     <ToggleRow label="Count days for tax residency" value={draft.tax} onChange={(tax) => update({ tax })} />
     {draft.tax ? (
       <>
-        <NumberField label="Tax resident after (days)" value={draft.taxThreshold} onChange={(taxThreshold) => update({ taxThreshold })} />
+        <NumberField label="Tax resident from (days)" value={draft.taxThreshold} onChange={(taxThreshold) => update({ taxThreshold })} />
         <Field label="Tax year starts">
           <SelectChips label="Tax year starts" options={YEAR_START_OPTIONS} selected={[draft.taxYearStart]} onToggle={(taxYearStart) => update({ taxYearStart })} />
         </Field>

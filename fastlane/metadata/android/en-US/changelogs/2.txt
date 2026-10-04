@@ -1,0 +1,1 @@
+New white app icon. Choosing passports now has a clear Done button, and on Android the picker no longer sits under the status bar. UK ties: a Yes to the 90-day question counts without logging past trips, and the screen explains what would lower your limit.

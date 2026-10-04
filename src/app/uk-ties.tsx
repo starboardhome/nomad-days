@@ -4,10 +4,10 @@ import type { UkTies } from '../data/schema';
 import { yearOf } from '../domain/days';
 import { actualStays } from '../domain/plan';
 import { ukTaxYears, ukTies } from '../domain/ukTies';
-import { tiesSummary } from '../features/jurisdictions';
 import { InfoButton } from '../features/ukTies/components/InfoSheet';
 import { YesNoQuestion } from '../features/ukTies/components/YesNoQuestion';
 import { COUNTRY_TIE, INTRO, LIMITS, QUESTIONS } from '../features/ukTies/content';
+import { ninetyDayHint, tiesVerdict, unansweredNote } from '../features/ukTies/model';
 import { useApp } from '../state/appStore';
 import { Banner } from '../ui/Banner';
 import { Button } from '../ui/Button';
@@ -29,10 +29,9 @@ export default function UkTiesScreen() {
   const set = (key: keyof UkTies, value: boolean) => saveSettings({ ...data.settings, ukTies: { ...answers, [key]: value } });
 
   const hints: Partial<Record<keyof UkTies, string>> = {
-    ninetyDays: `From your trips: ${taxYearLabel(y1)} ${result.fromTrips.priorYears[0]} days, ${taxYearLabel(y2)} ${result.fromTrips.priorYears[1]} days${
-      result.fromTrips.ninetyDays ? '. That’s already a 90-day tie.' : '.'
-    }`,
+    ninetyDays: ninetyDayHint(answers, result, [taxYearLabel(y1), taxYearLabel(y2)]),
   };
+  const verdict = tiesVerdict(result);
 
   return (
     <Screen>
@@ -40,17 +39,11 @@ export default function UkTiesScreen() {
 
       {result.answered ? (
         <Card className="gap-1">
-          <Heading>
-            {result.threshold < 183 ? `UK resident after ${result.threshold} days in a tax year` : 'UK resident after 183 days in a tax year'}
-          </Heading>
-          <Muted>
-            {`You have ${tiesSummary(result)} as ${result.leaver ? 'a leaver' : 'an arriver'}.${
-              result.threshold < 183 ? ' The Days tab now uses this limit.' : ' That’s not enough to lower the 183-day limit.'
-            }`}
-          </Muted>
+          <Heading>{verdict.heading}</Heading>
+          <Muted>{verdict.body}</Muted>
         </Card>
       ) : (
-        <Banner title="Answer the first question to use the ties test">Until then, only the 183-day test is checked.</Banner>
+        <Banner title="Answer the first question to use the ties test">{unansweredNote(result)}</Banner>
       )}
 
       {QUESTIONS.map((q) => (
