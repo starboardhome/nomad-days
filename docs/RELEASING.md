@@ -63,21 +63,24 @@ The recipe is [`docs/fdroid/io.github.starboardhome.nomaddays.yml`](fdroid/io.gi
 - JDK 17 targets moved to 21 (the build server's JDK). That covers the React Native Gradle plugin and every module's `build.gradle` and `build.gradle.kts`. Modules that pin Kotlin's `jvmTarget` (`react-native-worklets`, `react-native-reanimated`) otherwise fail with "Inconsistent JVM Target Compatibility".
 - `expo prebuild`, then the signing config removed so F-Droid can sign.
 - NDK `27.1.12297006`, matching React Native's.
+- **One APK per CPU type** (armeabi-v7a, arm64-v8a, x86_64), with versionCode `1000 × upstream + 1/2/3`. The universal APK was 131 MB; one ABI is about 45 MB. `VercodeOperation` lets auto-update compute these.
+- **`commit:` is the full commit hash** of the release tag, never the tag name (F-Droid's template requires this).
+- **Reproducible builds are off**, so F-Droid signs the APK with its own key. F-Droid and Play installs therefore can't update each other, and turning reproducible builds on later isn't possible for this app ID. Explain this in the merge request; the template asks for a reason.
 
 What has been checked, and how to check it again after dependency upgrades:
 - `fdroid lint` passes, and `fdroid rewritemeta` leaves the file unchanged (canonical format). fdroiddata CI runs fdroidserver from `master` with ruamel.yaml 0.18, which wraps long lines differently from the 2.4.5 release, so check the format with `pip install git+https://gitlab.com/fdroid/fdroidserver.git ruamel.yaml==0.18.10`.
 - The prebuild steps run cleanly on a checkout. Every `sed` matches, and `android/app/build.gradle` comes out with no `signingConfig`.
 - F-Droid's source scanner reports 0 problems. It deletes 137 prebuilt files under `node_modules` (Expo AARs and JARs, the optional libSQL and sqlite-vec libraries, and the dev-only esbuild and dotslash). It ignores the Hermes compiler and four Gradle files that point at React Native's local Maven repository.
-- **`fdroid build` passes** on F-Droid's CI for `v1.0.0` (merge request pipeline, 4 October 2026), and all 9 jobs pass. The scanner warns about two harmless files, an icon font and a Windows DLL that ships with the Hermes compiler; these don't block the build. Each successful pipeline also produces a signed test APK in the `fdroid build` job's artifacts.
+- **`fdroid build` passed** on F-Droid's CI for `v1.0.0` (single universal APK) (merge request pipeline, 4 October 2026), and all 9 jobs pass. The scanner warns about two harmless files, an icon font and a Windows DLL that ships with the Hermes compiler; these don't block the build. Each successful pipeline also produces a signed test APK in the `fdroid build` job's artifacts.
 
 ### Opening the merge request
 
-Already done for 1.0.0 ([fdroid/fdroiddata!51068](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51068), from the fork `starboardhome/nomad-days` on GitLab). Later releases need no new merge request: F-Droid finds new `v*` tags (`UpdateCheckMode: Tags`) and adds the build itself. Use these steps only if the recipe has to change.
+Opened for 1.0.0, then closed by F-Droid for not following the template (ticked boxes the recipe didn't meet: tag instead of hash, no ABI split, no reproducible-builds reason, Reports warnings not explained). Fixed for 1.0.1 ([fdroid/fdroiddata!51068](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51068), from the fork `starboardhome/nomad-days` on GitLab). Later releases need no new merge request: F-Droid finds new `v*` tags (`UpdateCheckMode: Tags`) and adds the build itself. Use these steps only if the recipe has to change.
 
 1. Fork <https://gitlab.com/fdroid/fdroiddata> on GitLab and clone your fork.
 2. Create a branch named `io.github.starboardhome.nomaddays` and copy the recipe to `metadata/io.github.starboardhome.nomaddays.yml`.
 3. Run `fdroid lint io.github.starboardhome.nomaddays` and `fdroid rewritemeta io.github.starboardhome.nomaddays`. Install the tools with `pip install fdroidserver`, ideally in a virtualenv.
-4. Commit with the message `New app: Nomad Days`, push, and open the merge request using the **App inclusion** template.
+4. Commit with the message `New app: Nomad Days`, push, and open the merge request using the **App inclusion** template. Tick only the boxes that are true, and write the reason under any that aren't (reproducible builds, Reports warnings). Don't verify your GitLab account to run CI; leave a note in the merge request instead.
 5. If the pipeline's build fails, fix the recipe on the branch. Mirror any fix back into `docs/fdroid/`.
 
 Expect the reviewers to ask about the following:
