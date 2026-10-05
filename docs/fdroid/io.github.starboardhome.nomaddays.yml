@@ -12,9 +12,9 @@ RepoType: git
 Repo: https://github.com/starboardhome/nomad-days.git
 
 Builds:
-  - versionName: 1.0.1
-    versionCode: 2001
-    commit: a0bae69f0dc8438f220c3672bf1e61c2c2aeb3a4
+  - versionName: 1.0.2
+    versionCode: 3001
+    commit: 00dd02afbfc2da9535c329d71d8bd45cab51699b
     sudo:
       - echo "deb https://deb.debian.org/debian forky main" > /etc/apt/sources.list.d/forky.list
       - apt-get update
@@ -50,9 +50,9 @@ Builds:
       - gradle assembleRelease
     ndk: 27.1.12297006
 
-  - versionName: 1.0.1
-    versionCode: 2002
-    commit: a0bae69f0dc8438f220c3672bf1e61c2c2aeb3a4
+  - versionName: 1.0.2
+    versionCode: 3002
+    commit: 00dd02afbfc2da9535c329d71d8bd45cab51699b
     sudo:
       - echo "deb https://deb.debian.org/debian forky main" > /etc/apt/sources.list.d/forky.list
       - apt-get update
@@ -88,9 +88,9 @@ Builds:
       - gradle assembleRelease
     ndk: 27.1.12297006
 
-  - versionName: 1.0.1
-    versionCode: 2003
-    commit: a0bae69f0dc8438f220c3672bf1e61c2c2aeb3a4
+  - versionName: 1.0.2
+    versionCode: 3003
+    commit: 00dd02afbfc2da9535c329d71d8bd45cab51699b
     sudo:
       - echo "deb https://deb.debian.org/debian forky main" > /etc/apt/sources.list.d/forky.list
       - apt-get update
@@ -141,5 +141,5 @@ VercodeOperation:
   - 1000 * %c + 2
   - 1000 * %c + 3
 UpdateCheckData: app.json|"versionCode":\s*(\d+)|.|"version":\s*"([^"]+)"
-CurrentVersion: 1.0.1
-CurrentVersionCode: 2003
+CurrentVersion: 1.0.2
+CurrentVersionCode: 3003
