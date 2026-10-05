@@ -16,12 +16,9 @@ Builds:
     versionCode: 2001
     commit: a0bae69f0dc8438f220c3672bf1e61c2c2aeb3a4
     sudo:
+      - echo "deb https://deb.debian.org/debian forky main" > /etc/apt/sources.list.d/forky.list
       - apt-get update
-      - apt-get install -y curl
-      - curl -Lo node.tar.gz https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz
-      - echo "6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff node.tar.gz"
-        | sha256sum -c -
-      - tar xzf node.tar.gz --strip-components=1 -C /usr/local/
+      - apt-get install -y -t forky npm
     output: android/app/build/outputs/apk/release/app-release-unsigned.apk
     prebuild:
       - sed -i -e '1a "expo":{"autolinking":{"android":{"buildFromSource":[".*"]}}},'
@@ -57,12 +54,9 @@ Builds:
     versionCode: 2002
     commit: a0bae69f0dc8438f220c3672bf1e61c2c2aeb3a4
     sudo:
+      - echo "deb https://deb.debian.org/debian forky main" > /etc/apt/sources.list.d/forky.list
       - apt-get update
-      - apt-get install -y curl
-      - curl -Lo node.tar.gz https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz
-      - echo "6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff node.tar.gz"
-        | sha256sum -c -
-      - tar xzf node.tar.gz --strip-components=1 -C /usr/local/
+      - apt-get install -y -t forky npm
     output: android/app/build/outputs/apk/release/app-release-unsigned.apk
     prebuild:
       - sed -i -e '1a "expo":{"autolinking":{"android":{"buildFromSource":[".*"]}}},'
@@ -98,12 +92,9 @@ Builds:
     versionCode: 2003
     commit: a0bae69f0dc8438f220c3672bf1e61c2c2aeb3a4
     sudo:
+      - echo "deb https://deb.debian.org/debian forky main" > /etc/apt/sources.list.d/forky.list
       - apt-get update
-      - apt-get install -y curl
-      - curl -Lo node.tar.gz https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz
-      - echo "6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff node.tar.gz"
-        | sha256sum -c -
-      - tar xzf node.tar.gz --strip-components=1 -C /usr/local/
+      - apt-get install -y -t forky npm
     output: android/app/build/outputs/apk/release/app-release-unsigned.apk
     prebuild:
       - sed -i -e '1a "expo":{"autolinking":{"android":{"buildFromSource":[".*"]}}},'
