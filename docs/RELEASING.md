@@ -58,7 +58,7 @@ Screens and captions are in `SHOTS` in `scripts/dev/store-screenshots.cjs`; the 
 ## F-Droid
 
 The recipe is [`docs/fdroid/io.github.starboardhome.nomaddays.yml`](fdroid/io.github.starboardhome.nomaddays.yml). It follows the pattern of other Expo apps in fdroiddata:
-- Node 24 from nodejs.org, pinned by sha256.
+- Node from Debian forky (`apt-get install -t forky npm`), as F-Droid reviewers ask and as other Expo recipes do; it only runs at build time.
 - Expo modules built from source (`buildFromSource`) instead of their prebuilt AARs.
 - JDK 17 targets moved to 21 (the build server's JDK). That covers the React Native Gradle plugin and every module's `build.gradle` and `build.gradle.kts`. Modules that pin Kotlin's `jvmTarget` (`react-native-worklets`, `react-native-reanimated`) otherwise fail with "Inconsistent JVM Target Compatibility".
 - `expo prebuild`, then the signing config removed so F-Droid can sign.
