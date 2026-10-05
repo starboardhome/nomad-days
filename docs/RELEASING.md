@@ -33,7 +33,7 @@ Versions come from `app.json` (`appVersionSource: local`), so bump `version`, `a
 
 ## Still to do before the first release
 
-- [x] App icon: `assets/source/mark.svg` (groups `calendar` and `today`) on a white background (`BACKGROUND` in `make-icons.cjs`, plus `android.adaptiveIcon.backgroundColor` in `app.json`). After changing it, run `node scripts/dev/make-icons.cjs` (app icons, splash, iOS Icon Composer layer), then `npm run screenshots -- --no-build` (feature graphic, F-Droid icon)
+- [x] App icon: `assets/source/mark.svg` (groups `calendar` and `today`) on a navy #192E45 background (`BACKGROUND` in `make-icons.cjs`, plus `android.adaptiveIcon.backgroundColor` in `app.json`). After changing it, run `node scripts/dev/make-icons.cjs` (app icons, splash, iOS Icon Composer layer), then `npm run screenshots -- --no-build` (feature graphic, F-Droid icon)
 - [x] Screenshots: `npm run screenshots` (see below)
 - [x] Developer name: Starboard Home (Google Play, F-Droid); legal name on the App Store
 - [x] Publish `docs/PRIVACY.md` on GitHub Pages (needs Pages enabled once: Settings → Pages → Source: GitHub Actions)

@@ -1,8 +1,8 @@
 /**
  * Generates the app icon set from one SVG mark: assets/source/mark.svg.
  *   node scripts/dev/make-icons.cjs
- * The mark is on a 1024 canvas with a transparent background, in two groups: `calendar` (body and rings)
- * and `today` (the star), which becomes a hole in the one-colour Android icon.
+ * The mark is on a 1024 canvas with a transparent background, in two groups: `calendar` (the outline and
+ * rings) and `today` (the star). The one-colour Android icon draws both in white.
  * Renders with Playwright's Chromium (no image libraries needed).
  */
 const fs = require('fs');
@@ -10,21 +10,21 @@ const path = require('path');
 const { execSync } = require('child_process');
 const { chromium } = require(require.resolve('playwright', { paths: [execSync('npm root -g').toString().trim()] }));
 
-// Icon background (the splash screen keeps the brand teal, set in app.json)
-const BACKGROUND = '#FFFFFF';
+// Icon background; the splash screen uses the same navy (expo-splash-screen backgroundColor in app.json)
+const BACKGROUND = '#192E45';
 
 const source = fs.readFileSync(path.join(__dirname, '../../assets/source/mark.svg'), 'utf8');
 const group = (id) => new RegExp(`<g id="${id}">([\\s\\S]*?)</g>`).exec(source)[1];
 const sourceDefs = /<defs>([\s\S]*?)<\/defs>/.exec(source)?.[1] ?? '';
 const recolour = (shapes, colour) => shapes.replace(/fill="[^"]*"/g, `fill="${colour}"`);
-// Source bbox (x 158–865, y 129–889 of 1024) mapped into a 100×100 box: x ≈ 21.6–78.4, y 19–80
-const FIT = 'translate(50 49.5) scale(0.08026) translate(-511.5 -509)';
+// Source bbox (x 141–882, y 135–879 of 1024) mapped into a 100×100 box: x ≈ 19.6–80.4, y 19–80
+const FIT = 'translate(50 49.5) scale(0.08199) translate(-511.5 -507)';
 
-/** The mark in a 100×100 box, in colour or as a one-colour silhouette with the star cut out */
-const mark = (mono = false) =>
-  mono
-    ? `<mask id="m"><rect width="100" height="100" fill="#000"/><g transform="${FIT}">${recolour(group('calendar'), '#fff')}${recolour(group('today'), '#000')}</g></mask><rect width="100" height="100" fill="#fff" mask="url(#m)"/>`
-    : `<g transform="${FIT}">${group('calendar')}${group('today')}</g>`;
+/** The mark in a 100×100 box, in colour or in white for the one-colour (themed) Android icon */
+const mark = (mono = false) => {
+  const shapes = group('calendar') + group('today');
+  return `<g transform="${FIT}">${mono ? recolour(shapes, '#fff') : shapes}</g>`;
+};
 
 const svg = (size, inner) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100"><defs>${sourceDefs}</defs>${inner}</svg>`;
@@ -61,13 +61,13 @@ const outputs = {
   fs.mkdirSync(path.join(icon, 'Assets'));
   fs.writeFileSync(
     path.join(icon, 'Assets', 'calendar.svg'),
-    `<svg xmlns="http://www.w3.org/2000/svg" width="568" height="610" viewBox="21.6 19 56.8 61"><defs>${sourceDefs}</defs>${mark()}</svg>\n`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="608" height="610" viewBox="19.6 19 60.8 61"><defs>${sourceDefs}</defs>${mark()}</svg>\n`,
   );
   fs.writeFileSync(
     path.join(icon, 'icon.json'),
     JSON.stringify(
       {
-        fill: { solid: 'extended-srgb:1.00000,1.00000,1.00000,1.00000' }, // BACKGROUND
+        fill: { solid: 'extended-srgb:0.09804,0.18039,0.27059,1.00000' }, // BACKGROUND
         groups: [
           {
             layers: [{ 'image-name': 'calendar.svg', name: 'calendar', position: { scale: 1, 'translation-in-points': [0, 0] } }],
