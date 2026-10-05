@@ -10,7 +10,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 const { chromium } = require(require.resolve('playwright', { paths: [execSync('npm root -g').toString().trim()] }));
 
-// Icon background (the splash screen keeps the brand teal, set in app.json)
+// Icon background; the splash screen uses the same navy (expo-splash-screen backgroundColor in app.json)
 const BACKGROUND = '#192E45';
 
 const source = fs.readFileSync(path.join(__dirname, '../../assets/source/mark.svg'), 'utf8');
