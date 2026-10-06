@@ -2,7 +2,7 @@
   "expo": {
     "name": "Nomad Days",
     "slug": "nomad-days",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "nomaddays",
@@ -10,7 +10,7 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "io.github.starboardhome.nomaddays",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "config": {
         "usesNonExemptEncryption": false
       }
@@ -24,8 +24,13 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "io.github.starboardhome.nomaddays",
-      "versionCode": 3,
-      "allowBackup": false
+      "versionCode": 4,
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "output": "static",

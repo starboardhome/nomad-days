@@ -1,0 +1,1 @@
+Removes permissions the app never used (drawing over other apps, shared storage). F-Droid now ships a smaller download for each type of device.

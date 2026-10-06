@@ -16,7 +16,7 @@
 ## Each release
 
 1. Bump `expo.version` in `app.json`, plus `android.versionCode` and `ios.buildNumber` (both +1).
-2. Add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` (500 characters at most).
+2. Add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` **and** the same text as `<versionCode>001.txt`, `<versionCode>002.txt` and `<versionCode>003.txt` (500 characters at most). F-Droid publishes one APK per ABI with versionCode `1000 × code + 1/2/3` and looks changelogs up by that number. CI (`scripts/ci/check-changelogs.mjs`) fails if any are missing.
 3. Run `npm run test:unit && npm run typecheck && npm run rules:check`.
 4. Tag it: `git tag v<version> && git push --tags`. F-Droid builds from tags.
 5. Build for the stores with EAS: `npx eas-cli@latest build --platform all --profile production`, then `npx eas-cli@latest submit --profile production`.
@@ -63,7 +63,7 @@ The recipe is [`docs/fdroid/io.github.starboardhome.nomaddays.yml`](fdroid/io.gi
 - JDK 17 targets moved to 21 (the build server's JDK). That covers the React Native Gradle plugin and every module's `build.gradle` and `build.gradle.kts`. Modules that pin Kotlin's `jvmTarget` (`react-native-worklets`, `react-native-reanimated`) otherwise fail with "Inconsistent JVM Target Compatibility".
 - `expo prebuild`, then the signing config removed so F-Droid can sign.
 - NDK `27.1.12297006`, matching React Native's.
-- **One APK per CPU type** (armeabi-v7a, arm64-v8a, x86_64), with versionCode `1000 × upstream + 1/2/3`. The universal APK was 131 MB; one ABI is about 45 MB. `VercodeOperation` lets auto-update compute these.
+- **One APK per CPU type** (armeabi-v7a, arm64-v8a, x86_64), with versionCode `1000 × upstream + 1/2/3`. The ABI is set with `printf '\nreactNativeArchitectures=…\n'` and `-PreactNativeArchitectures=…`. `expo prebuild` writes `gradle.properties` without a final newline, so a plain `echo >>` glued onto `expo.sqlite.useSQLCipher=true`, which silently dropped both the ABI split and SQLCipher (found in F-Droid review, October 2026). Two `grep -qx` guards now fail the build if either property is wrong. The universal APK was 131 MB; one ABI is about 45 MB. `VercodeOperation` lets auto-update compute these.
 - **`commit:` is the full commit hash** of the release tag, never the tag name (F-Droid's template requires this).
 - **Reproducible builds are off**, so F-Droid signs the APK with its own key. F-Droid and Play installs therefore can't update each other, and turning reproducible builds on later isn't possible for this app ID. Explain this in the merge request; the template asks for a reason.
 
