@@ -31,5 +31,7 @@ jobs:
         run: |
           npx expo prebuild --platform ios --no-install
           bash scripts/ci/check-ios-scene.sh
+      - name: Changelogs for this release (incl. F-Droid's per-ABI version codes)
+        run: node scripts/ci/check-changelogs.mjs
       - name: Dependency audit (high/critical, minus documented exceptions)
         run: node scripts/ci/audit.mjs
