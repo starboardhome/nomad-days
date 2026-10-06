@@ -34,9 +34,11 @@ Builds:
       - sed -i -e '/signingConfig /d' android/app/build.gradle
       - sed -i 's/versionCode \([0-9][0-9]*\)/versionCode (\1 * 1000 + 1)/' android/app/build.gradle
       - sed -i '/reactNativeArchitectures=/d' android/gradle.properties
-      - echo 'reactNativeArchitectures=armeabi-v7a' >> android/gradle.properties
+      - printf '\nreactNativeArchitectures=armeabi-v7a\n' >> android/gradle.properties
       - printf '\norg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=2g\norg.gradle.workers.max=2\n'
         >> android/gradle.properties
+      - grep -qx 'expo.sqlite.useSQLCipher=true' android/gradle.properties
+      - grep -qx 'reactNativeArchitectures=armeabi-v7a' android/gradle.properties
     scanignore:
       - node_modules/hermes-compiler/hermesc/linux64-bin/hermesc
       - node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
@@ -47,7 +49,7 @@ Builds:
       - node_modules
     build:
       - cd android/app
-      - gradle assembleRelease
+      - gradle assembleRelease -PreactNativeArchitectures=armeabi-v7a
     ndk: 27.1.12297006
 
   - versionName: 1.0.2
@@ -72,9 +74,11 @@ Builds:
       - sed -i -e '/signingConfig /d' android/app/build.gradle
       - sed -i 's/versionCode \([0-9][0-9]*\)/versionCode (\1 * 1000 + 2)/' android/app/build.gradle
       - sed -i '/reactNativeArchitectures=/d' android/gradle.properties
-      - echo 'reactNativeArchitectures=arm64-v8a' >> android/gradle.properties
+      - printf '\nreactNativeArchitectures=arm64-v8a\n' >> android/gradle.properties
       - printf '\norg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=2g\norg.gradle.workers.max=2\n'
         >> android/gradle.properties
+      - grep -qx 'expo.sqlite.useSQLCipher=true' android/gradle.properties
+      - grep -qx 'reactNativeArchitectures=arm64-v8a' android/gradle.properties
     scanignore:
       - node_modules/hermes-compiler/hermesc/linux64-bin/hermesc
       - node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
@@ -85,7 +89,7 @@ Builds:
       - node_modules
     build:
       - cd android/app
-      - gradle assembleRelease
+      - gradle assembleRelease -PreactNativeArchitectures=arm64-v8a
     ndk: 27.1.12297006
 
   - versionName: 1.0.2
@@ -110,9 +114,11 @@ Builds:
       - sed -i -e '/signingConfig /d' android/app/build.gradle
       - sed -i 's/versionCode \([0-9][0-9]*\)/versionCode (\1 * 1000 + 3)/' android/app/build.gradle
       - sed -i '/reactNativeArchitectures=/d' android/gradle.properties
-      - echo 'reactNativeArchitectures=x86_64' >> android/gradle.properties
+      - printf '\nreactNativeArchitectures=x86_64\n' >> android/gradle.properties
       - printf '\norg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=2g\norg.gradle.workers.max=2\n'
         >> android/gradle.properties
+      - grep -qx 'expo.sqlite.useSQLCipher=true' android/gradle.properties
+      - grep -qx 'reactNativeArchitectures=x86_64' android/gradle.properties
     scanignore:
       - node_modules/hermes-compiler/hermesc/linux64-bin/hermesc
       - node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
@@ -123,7 +129,7 @@ Builds:
       - node_modules
     build:
       - cd android/app
-      - gradle assembleRelease
+      - gradle assembleRelease -PreactNativeArchitectures=x86_64
     ndk: 27.1.12297006
 
 MaintainerNotes: |-
