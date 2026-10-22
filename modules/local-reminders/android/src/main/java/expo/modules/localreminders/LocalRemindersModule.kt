@@ -62,7 +62,7 @@ class LocalRemindersModule : Module() {
       perms.askForPermissions({ responses -> promise.resolve(statusFrom(responses)) }, Manifest.permission.POST_NOTIFICATIONS)
     }
 
-    /** Replace every scheduled reminder with this list. Returns how many were scheduled. */
+    /** Replace every scheduled reminder with this list. Returns how many were scheduled. The text is stored encrypted (ReminderCipher). */
     AsyncFunction("replaceAllAsync") { reminders: List<ReminderRecord> ->
       val work = WorkManager.getInstance(context)
       work.cancelAllWorkByTag(TAG)
@@ -71,7 +71,7 @@ class LocalRemindersModule : Module() {
       upcoming.forEach { r ->
         val request = OneTimeWorkRequestBuilder<ReminderWorker>()
           .setInitialDelay(r.fireAtMs.toLong() - now, TimeUnit.MILLISECONDS)
-          .setInputData(workDataOf(ReminderWorker.KEY_ID to r.id, ReminderWorker.KEY_TITLE to r.title, ReminderWorker.KEY_BODY to r.body))
+          .setInputData(workDataOf(ReminderWorker.KEY_ID to r.id, ReminderWorker.KEY_SEALED_TITLE to ReminderCipher.seal(r.title), ReminderWorker.KEY_SEALED_BODY to ReminderCipher.seal(r.body)))
           .addTag(TAG)
           .build()
         work.enqueueUniqueWork("$TAG:${r.id}", ExistingWorkPolicy.REPLACE, request)
