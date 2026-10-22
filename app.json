@@ -29,7 +29,10 @@
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.INTERNET",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
     "web": {
@@ -55,7 +58,8 @@
       "expo-secure-store",
       "expo-sharing",
       "@react-native-community/datetimepicker",
-      "./plugins/withSceneLifecycle.js"
+      "./plugins/withSceneLifecycle.js",
+      "./plugins/withDebugInternet.js"
     ],
     "experiments": {
       "typedRoutes": true,
