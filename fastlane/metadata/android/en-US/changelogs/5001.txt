@@ -1,0 +1,1 @@
+No internet permission at all: the app can't go online. Backups can be saved straight to a folder on your phone. Reminder text is stored encrypted. Clearer headlines: "days left after today", and "below the limit for the rest of the year" when the year end comes first.
