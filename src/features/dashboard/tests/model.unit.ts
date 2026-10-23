@@ -107,7 +107,7 @@ describe('dashboard model', () => {
     assert.equal(schengen.name, 'Schengen Area');
     assert.equal(schengen.present, true);
     const line = schengen.rules[0];
-    assert.equal(line.headline, '22 days left');
+    assert.equal(line.headline, '21 days left after today'); // 69 used (incl. today) + 21 = 90
     assert.deepEqual(line.details, [
       'Used 69 of 90 days in the last 180',
       'Leave by 19 Oct 2026',
@@ -144,6 +144,43 @@ describe('dashboard model', () => {
     const tax = buildDashboard(data, today).cards[0].rules.find((r) => r.category === 'tax')!;
     assert.equal(tax.headline, '65 days before tax residency');
     assert.deepEqual(tax.details, ['117 of 183 days this tax year', 'Safe until 1 Dec 2026 if you arrive today', 'Count resets 6 Apr 2027']);
+  });
+
+  describe('headlines add up with the details', () => {
+    const aussie = { taxResidence: 'AE', passports: ['AU'] };
+    const headline = (stays: AppData['stays'], on = today, i = 0) =>
+      buildDashboard(withData({ profile: aussie, stays }), on).cards[0].rules[i];
+
+    it('counts Schengen days left from tomorrow while you are there', () => {
+      const line = headline([{ id: 'es', country: 'ES', entry: '2026-09-28' }]); // arrived today
+      assert.equal(line.headline, '89 days left after today'); // not "90 days left" next to "Used 1"
+      assert.deepEqual(line.details.slice(0, 2), ['Used 1 of 90 days in the last 180', 'Leave by 26 Dec 2026']);
+    });
+
+    it('says when today is the last day', () => {
+      const line = headline([{ id: 'fr', country: 'FR', entry: '2026-07-01' }]); // 90 days incl. today
+      assert.equal(line.headline, 'Last day today');
+      assert.match(line.details[0], /^Used 90 of 90/);
+    });
+
+    it('does the same for a UK visit', () => {
+      const line = headline([{ id: 'gb', country: 'GB', entry: '2026-09-07' }]);
+      const [, day, limit] = /^Day (\d+) of (\d+)/.exec(line.details[0])!;
+      const left = Number(/^(\d+) days left after today$/.exec(line.headline)![1]);
+      assert.equal(Number(day) + left, Number(limit));
+    });
+
+    it('says the year end is the cap instead of giving a misleading number (US)', () => {
+      // 60 days this year and none before: 183 is out of reach before 1 January
+      const us = buildDashboard(withData({ profile: aussie, stays: [{ id: 'us', country: 'US', entry: '2026-03-01', exit: '2026-04-30' }] }), today)
+        .cards.find((c) => c.id === 'us')!.rules.find((r) => r.category === 'tax')!;
+      assert.equal(us.headline, 'Below the limit for the rest of 2026');
+    });
+
+    it('and for the UK tax year', () => {
+      const tax = headline([{ id: 'gb', country: 'GB', entry: '2026-05-01', exit: '2026-05-10' }], day('2027-02-01'), 1);
+      assert.equal(tax.headline, 'Below the limit for the rest of the tax year (to 5 Apr 2027)');
+    });
   });
 
   it('describes what is available when you are not there', () => {

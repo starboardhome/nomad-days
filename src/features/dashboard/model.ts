@@ -50,6 +50,13 @@ export { allJurisdictions };
 const d = (iso?: string) => (iso ? formatDate(iso) : undefined);
 const compact = (xs: readonly (string | undefined | false)[]) => xs.filter((x): x is string => !!x);
 
+/**
+ * While you're there, today is already in "Used N", so count what's left from tomorrow
+ * (otherwise "Used 1 of 90" next to "90 days left" adds up to 91).
+ */
+const afterToday = (daysLeft: number, suffix: string, lastDay: string) =>
+  daysLeft > 1 ? `${plural(daysLeft - 1, 'day')} ${suffix}` : lastDay;
+
 const entryLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' | 'details'> => {
   if (!s) return { headline: '', details: [] };
   const usage =
@@ -64,7 +71,7 @@ const entryLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' |
       : s.level === 'blocked'
         ? 'No days available'
         : s.present
-          ? `${plural(s.daysLeft, 'day')} left`
+          ? afterToday(s.daysLeft, 'left after today', 'Last day today')
           : `${plural(s.daysLeft, 'day')} available`;
   return {
     headline,
@@ -76,11 +83,25 @@ const entryLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' |
   };
 };
 
+/** Tax headline. When the end of the (tax) year is what limits the count, say so instead of giving a number. */
+const taxHeadline = (s: NonNullable<RuleResult['status']>, weighted: boolean): string => {
+  if (s.level === 'over') return 'Tax residency threshold reached';
+  const yearEnd = s.resetsOn ? toDayNum(s.resetsOn) - 1 : undefined;
+  if (s.lastSafeDay && yearEnd !== undefined && toDayNum(s.lastSafeDay) >= yearEnd) {
+    return weighted
+      ? `Below the limit for the rest of ${yearOf(yearEnd)}`
+      : `Below the limit for the rest of the tax year (to ${formatDate(toISO(yearEnd))})`;
+  }
+  return s.present
+    ? afterToday(s.daysLeft, 'left before tax residency', 'Last day before tax residency')
+    : `${plural(s.daysLeft, 'day')} before tax residency`;
+};
+
 const taxLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' | 'details'> => {
   if (!s) return { headline: '', details: [] };
   const weighted = rule.kind === 'weightedYears';
   return {
-    headline: s.level === 'over' ? 'Tax residency threshold reached' : `${plural(s.daysLeft, 'day')} before tax residency`,
+    headline: taxHeadline(s, weighted),
     details: compact([
       `${s.used} of ${s.limit} ${weighted ? 'weighted days' : 'days'} this ${weighted ? 'year' : 'tax year'}`,
       s.lastSafeDay && s.level !== 'over' && `Safe until ${d(s.lastSafeDay)} if you ${s.present ? 'stay' : 'arrive today'}`,

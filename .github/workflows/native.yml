@@ -65,6 +65,11 @@ jobs:
       - name: Build debug APK
         working-directory: android
         run: ./gradlew :app:assembleDebug --no-daemon
+      - name: Permissions (release has none of the blocked ones, debug keeps INTERNET)
+        working-directory: android
+        run: |
+          ./gradlew :app:processReleaseMainManifest --no-daemon
+          bash ../scripts/ci/check-android-permissions.sh
 
   ios:
     runs-on: macos-latest

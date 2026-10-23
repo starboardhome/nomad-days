@@ -15,8 +15,11 @@ import androidx.work.WorkerParameters
 class ReminderWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
   companion object {
     const val KEY_ID = "id"
-    const val KEY_TITLE = "title"
-    const val KEY_BODY = "body"
+    const val KEY_SEALED_TITLE = "sealedTitle"
+    const val KEY_SEALED_BODY = "sealedBody"
+    // Plain text, as scheduled by 1.0.3 and earlier. Replaced the next time the app opens.
+    private const val KEY_TITLE = "title"
+    private const val KEY_BODY = "body"
     const val CHANNEL_ID = "stay-reminders"
   }
 
@@ -32,11 +35,13 @@ class ReminderWorker(context: Context, params: WorkerParameters) : Worker(contex
       PendingIntent.getActivity(applicationContext, id.hashCode(), it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
+    val title = text(KEY_SEALED_TITLE, KEY_TITLE) ?: "Nomad Days"
+    val body = text(KEY_SEALED_BODY, KEY_BODY) ?: "You have a reminder. Open the app to see it."
     val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
       .setSmallIcon(R.drawable.ic_stat_reminder)
-      .setContentTitle(inputData.getString(KEY_TITLE))
-      .setContentText(inputData.getString(KEY_BODY))
-      .setStyle(NotificationCompat.BigTextStyle().bigText(inputData.getString(KEY_BODY)))
+      .setContentTitle(title)
+      .setContentText(body)
+      .setStyle(NotificationCompat.BigTextStyle().bigText(body))
       .setPriority(NotificationCompat.PRIORITY_DEFAULT)
       .setContentIntent(tap)
       .setAutoCancel(true)
@@ -45,6 +50,9 @@ class ReminderWorker(context: Context, params: WorkerParameters) : Worker(contex
     manager.notify(id.hashCode(), notification)
     return Result.success()
   }
+
+  private fun text(sealedKey: String, plainKey: String): String? =
+    inputData.getString(sealedKey)?.let(ReminderCipher::open) ?: inputData.getString(plainKey)
 
   private fun ensureChannel() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
