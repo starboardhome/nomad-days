@@ -36,7 +36,8 @@ jobs:
           target: default
           arch: x86_64
           disable-animations: true
-          script: bash scripts/ci/android-launch.sh android/app/build/outputs/apk/release/app-release.apk "$(node -p "require('./app.json').expo.android.package")"
+          # A fresh install opens on onboarding, which needs the encrypted database (SQLCipher) to have opened
+          script: bash scripts/ci/android-launch.sh android/app/build/outputs/apk/release/app-release.apk "$(node -p "require('./app.json').expo.android.package")" "Where are you tax resident?"
 
   ios:
     runs-on: macos-latest

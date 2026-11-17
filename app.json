@@ -2,7 +2,7 @@
   "expo": {
     "name": "Nomad Days",
     "slug": "nomad-days",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "nomaddays",
@@ -10,7 +10,7 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "io.github.starboardhome.nomaddays",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "config": {
         "usesNonExemptEncryption": false
       }
@@ -24,7 +24,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "io.github.starboardhome.nomaddays",
-      "versionCode": 5,
+      "versionCode": 6,
       "allowBackup": false,
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",
@@ -59,7 +59,16 @@
       "expo-sharing",
       "@react-native-community/datetimepicker",
       "./plugins/withSceneLifecycle.js",
-      "./plugins/withDebugInternet.js"
+      "./plugins/withDebugInternet.js",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,0 +1,1 @@
+Smaller download: unused code and resources are now stripped from the app (R8). No changes to features.

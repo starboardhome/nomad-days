@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Installs the release APK on the running emulator, launches it and reports what happened.
 # Findings are printed as GitHub annotations (::error:: / ::notice::) so they're visible without logs.
+# EXPECT (optional) is text that must be on screen: proof the app got past startup, not just that it didn't crash.
 set -uo pipefail
-APK="$1"; PKG="$2"
+APK="$1"; PKG="$2"; EXPECT="${3:-}"
 adb install -r "$APK" >/dev/null
 adb logcat -c
 adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
@@ -16,6 +17,11 @@ adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
 SCREEN=$(adb shell cat /sdcard/ui.xml 2>/dev/null | grep -oE 'text="[^"]+"' | sed 's/text="//; s/"$//' | head -25)
 
 if adb shell pidof "$PKG" >/dev/null; then
+  if [ -n "$EXPECT" ] && ! echo "$SCREEN" | grep -qF "$EXPECT"; then
+    echo "${SCREEN:-nothing}" | annotate error "Android: running, but \"$EXPECT\" isn't on screen. Text on screen"
+    echo "${JS:-none}" | annotate error "Android: JS/runtime errors"
+    exit 1
+  fi
   echo "$SCREEN" | annotate notice "Android: app running. Text on screen"
   [ -n "$JS" ] && echo "$JS" | annotate warning "Android: JS/runtime errors in logcat"
   exit 0
