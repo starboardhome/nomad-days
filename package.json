@@ -1,7 +1,7 @@
 {
   "name": "nomad-days",
   "main": "expo-router/entry",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "dependencies": {
     "@expo/ui": "~57.0.20",
     "@expo/vector-icons": "^15.0.2",
@@ -10,6 +10,7 @@
     "@react-native-community/datetimepicker": "9.1.0",
     "date-fns": "^4.4.0",
     "expo": "~57.0.25",
+    "expo-build-properties": "~57.0.22",
     "expo-constants": "~57.0.19",
     "expo-crypto": "~57.0.3",
     "expo-device": "~57.0.2",
