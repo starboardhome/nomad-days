@@ -183,6 +183,49 @@ describe('dashboard model', () => {
     });
   });
 
+  describe('card summary (the big number)', () => {
+    const aussie = { taxResidence: 'AE', passports: ['AU'] };
+    const cardsFor = (stays: AppData['stays'], on = today) => buildDashboard(withData({ profile: aussie, stays }), on).cards;
+
+    it('shows the flag and the days left in the middle of the card', () => {
+      const [schengen] = buildDashboard(aussieInEurope, today).cards;
+      assert.equal(schengen.flag, '🇪🇺');
+      assert.deepEqual(schengen.summary, { value: 21, text: 'days left after today', rule: '90 days in any 180-day period', level: schengen.rules[0].level });
+    });
+
+    it('picks whichever rule runs out first', () => {
+      const [uk] = cardsFor([{ id: 'gb', country: 'GB', entry: '2026-09-07' }]);
+      assert.equal(uk.flag, '🇬🇧');
+      const values = uk.rules.map((r) => r.big!.value);
+      assert.equal(values.length, 2);
+      assert.equal(uk.summary.value, Math.min(...values));
+    });
+
+    it("skips a tax test that can't be reached before the year ends", () => {
+      const us = cardsFor([{ id: 'us', country: 'US', entry: '2026-03-01', exit: '2026-04-30' }]).find((c) => c.id === 'us')!;
+      assert.equal(us.rules.find((r) => r.category === 'tax')!.big, undefined);
+      assert.deepEqual([us.summary.value, us.summary.text], [90, 'days available']);
+    });
+
+    it('puts an overstay in place of the number', () => {
+      const [schengen] = cardsFor([{ id: 'x', country: 'DE', entry: '2026-06-01' }]);
+      assert.deepEqual(schengen.summary, { text: 'Overstayed', rule: '90 days in any 180-day period', level: 'over' });
+    });
+
+    it('says when nothing applies', () => {
+      const data = withData({ profile: { taxResidence: 'GB', passports: ['IE'] }, stays: [{ id: 'g', country: 'GB', entry: '2026-09-01' }] });
+      assert.deepEqual(buildDashboard(data, today).cards[0].summary, { text: 'Doesn’t apply to you', level: 'na' });
+    });
+
+    it('words a rolling tax test as a 12-month window (New Zealand)', () => {
+      const nz = cardsFor([{ id: 'nz', country: 'NZ', entry: '2026-08-01', exit: '2026-08-31' }]).find((c) => c.id === 'new-zealand')!;
+      assert.equal(nz.flag, '🇳🇿');
+      const tax = nz.rules.find((r) => r.category === 'tax')!;
+      assert.equal(tax.details[0], '31 of 183 days in the last 365');
+      assert.equal(tax.headline, '152 days before tax residency');
+    });
+  });
+
   it('describes what is available when you are not there', () => {
     const data = withData({ profile: { taxResidence: 'AE', passports: ['AU'] }, stays: [{ id: 'g', country: 'GB', entry: '2026-04-06', exit: '2026-08-01' }] });
     const visitor = buildDashboard(data, today).cards[0].rules[0];

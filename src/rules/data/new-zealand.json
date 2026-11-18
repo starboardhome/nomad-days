@@ -24,7 +24,7 @@
       "id": "nz-183-days-12-months",
       "category": "tax",
       "kind": "rolling",
-      "label": "Tax resident after more than 183 days in any 12 months",
+      "label": "More than 183 days in any 12 months",
       "maxDays": 183,
       "windowDays": 365,
       "counting": "anyPartOfDay",

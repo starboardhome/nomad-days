@@ -3,7 +3,7 @@
  * No React here, so it's unit-tested directly.
  */
 import type { AppData } from '../../data/schema';
-import { countryName } from '../../data/countries';
+import { countryName, flagOf } from '../../data/countries';
 import { isCustomJurisdiction } from '../../domain/custom';
 import { actualStays } from '../../domain/plan';
 import { evaluateAll, type JurisdictionResult, type RuleResult } from '../../domain/evaluate';
@@ -24,6 +24,18 @@ export type RuleLine = Readonly<{
   notes: readonly string[];
   plans: readonly PlanLine[]; // tax tests: what upcoming trips would do, e.g. "153 days before tax residency"
   link?: Readonly<{ label: string; href: '/uk-ties' }>;
+  big?: BigNumber; // the headline as a number, when it is one
+}>;
+
+/** "21" + "days left after today" */
+export type BigNumber = Readonly<{ value: number; caption: string }>;
+
+/** What the collapsed card shows: the rule that runs out first, as one big number where possible */
+export type Summary = Readonly<{
+  value?: number; //  21
+  text: string; //    "days left after today", or "Overstayed" when there's no number
+  rule?: string; //   which rule it comes from
+  level: Level | 'na';
 }>;
 
 export type PlanLine = Readonly<{ text: string; tone: 'ok' | 'danger' }>;
@@ -31,6 +43,8 @@ export type PlanLine = Readonly<{ text: string; tone: 'ok' | 'danger' }>;
 export type Card = Readonly<{
   id: string;
   name: string;
+  flag: string; // 🇪🇺, 🇬🇧, …
+  summary: Summary;
   present: boolean;
   level: Level;
   ownRulesFor?: string; // country code, if these are the user's own rules (editable)
@@ -57,7 +71,17 @@ const compact = (xs: readonly (string | undefined | false)[]) => xs.filter((x): 
 const afterToday = (daysLeft: number, suffix: string, lastDay: string) =>
   daysLeft > 1 ? `${plural(daysLeft - 1, 'day')} ${suffix}` : lastDay;
 
-const entryLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' | 'details'> => {
+/** Days left as a number. While you're there, today is already counted, so it's the days after today. */
+const bigDays = (s: NonNullable<RuleResult['status']>, whilePresent: string, otherwise: string): BigNumber | undefined =>
+  s.level === 'over' || s.level === 'blocked'
+    ? undefined
+    : s.present
+      ? s.daysLeft > 1
+        ? { value: s.daysLeft - 1, caption: whilePresent }
+        : undefined // "Last day today"
+      : { value: s.daysLeft, caption: otherwise };
+
+const entryLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' | 'details' | 'big'> => {
   if (!s) return { headline: '', details: [] };
   const usage =
     rule.kind === 'rolling'
@@ -75,6 +99,7 @@ const entryLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' |
           : `${plural(s.daysLeft, 'day')} available`;
   return {
     headline,
+    big: bigDays(s, 'days left after today', 'days available'),
     details: compact([
       (s.present || rule.kind === 'rolling') && usage,
       s.lastSafeDay && (s.present ? `Leave by ${d(s.lastSafeDay)}` : `Arrive today → stay until ${d(s.lastSafeDay)}`),
@@ -83,12 +108,16 @@ const entryLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' |
   };
 };
 
+/** The (tax) year ends before the threshold could be reached */
+const cappedByYearEnd = (s: NonNullable<RuleResult['status']>): boolean =>
+  !!s.lastSafeDay && !!s.resetsOn && toDayNum(s.lastSafeDay) >= toDayNum(s.resetsOn) - 1;
+
 /** Tax headline. When the end of the (tax) year is what limits the count, say so instead of giving a number. */
 const taxHeadline = (s: NonNullable<RuleResult['status']>, weighted: boolean): string => {
   if (s.level === 'over') return 'Tax residency threshold reached';
   if (s.level === 'blocked') return 'At the limit: one more day makes you tax resident';
   const yearEnd = s.resetsOn ? toDayNum(s.resetsOn) - 1 : undefined;
-  if (s.lastSafeDay && yearEnd !== undefined && toDayNum(s.lastSafeDay) >= yearEnd) {
+  if (yearEnd !== undefined && cappedByYearEnd(s)) {
     return weighted
       ? `Below the limit for the rest of ${yearOf(yearEnd)}`
       : `Below the limit for the rest of the tax year (to ${formatDate(toISO(yearEnd))})`;
@@ -106,11 +135,12 @@ const taxUsage = (rule: RuleResult['rule'], used: number, limit: number) =>
       ? `${used} of ${limit} weighted days this year`
       : `${used} of ${limit} days this tax year`;
 
-const taxLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' | 'details'> => {
+const taxLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' | 'details' | 'big'> => {
   if (!s) return { headline: '', details: [] };
   const weighted = rule.kind === 'weightedYears';
   return {
     headline: taxHeadline(s, weighted),
+    big: cappedByYearEnd(s) ? undefined : bigDays(s, 'days left before tax residency', 'days before tax residency'),
     details: compact([
       taxUsage(rule, s.used, s.limit),
       s.lastSafeDay && s.level !== 'over' && `Safe until ${d(s.lastSafeDay)} if you ${s.present ? 'stay' : 'arrive today'}`,
@@ -154,14 +184,37 @@ const planLines = (r: RuleResult, upcoming: readonly PlannedItem[], today: DayNu
   });
 };
 
-const toCard = (res: JurisdictionResult, upcoming: readonly PlannedItem[], today: DayNum, answeredTies: boolean): Card => ({
-  id: res.jurisdiction.id,
-  ...(isCustomJurisdiction(res.jurisdiction.id) && { ownRulesFor: [...res.jurisdiction.countries][0] }),
-  name: res.jurisdiction.name,
-  present: res.results.some((r) => r.status?.present),
-  level: res.level,
-  rules: res.results.map((r) => ({ ...ruleLine(r), plans: planLines(r, upcoming, today), ...tiesLink(r, answeredTies) })),
-});
+/** 🇪🇺 for Schengen, the country's flag for a single-country jurisdiction */
+export const flagFor = (j: Jurisdiction): string =>
+  j.id === 'schengen' ? '🇪🇺' : j.countries.size === 1 ? flagOf([...j.countries][0]) : '🌍';
+
+/**
+ * The rule that matters most right now: the most severe level, then the fewest days left.
+ * A tax test that can't be reached before the year ends has no number and comes last.
+ */
+export const summarize = (rules: readonly RuleLine[]): Summary => {
+  const live = rules.filter((r) => r.level !== 'na');
+  if (!live.length) return { text: rules[0]?.headline ?? 'No limits apply to you', level: 'na' };
+  const rank = (r: RuleLine) => r.big?.value ?? (r.level === 'ok' ? Infinity : 0);
+  const [top] = [...live].sort((a, b) => SEVERITY[b.level as Level] - SEVERITY[a.level as Level] || rank(a) - rank(b));
+  return top.big
+    ? { value: top.big.value, text: top.big.caption, rule: top.label, level: top.level }
+    : { text: top.headline, rule: top.label, level: top.level };
+};
+
+const toCard = (res: JurisdictionResult, upcoming: readonly PlannedItem[], today: DayNum, answeredTies: boolean): Card => {
+  const rules = res.results.map((r) => ({ ...ruleLine(r), plans: planLines(r, upcoming, today), ...tiesLink(r, answeredTies) }));
+  return {
+    id: res.jurisdiction.id,
+    ...(isCustomJurisdiction(res.jurisdiction.id) && { ownRulesFor: [...res.jurisdiction.countries][0] }),
+    name: res.jurisdiction.name,
+    flag: flagFor(res.jurisdiction),
+    summary: summarize(rules),
+    present: res.results.some((r) => r.status?.present),
+    level: res.level,
+    rules,
+  };
+};
 
 /** The UK 183-day test can be lowered by your ties: link to the questions */
 const tiesLink = (r: RuleResult, answered: boolean): Pick<RuleLine, 'link'> =>
