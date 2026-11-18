@@ -104,3 +104,13 @@ describe('planned trip lists', () => {
     assert.deepEqual(upcomingTrips(stays, today).map((s) => s.id), ['c', 'b']);
   });
 });
+
+describe('planned trips use the limit for your passport', () => {
+  it('lets a British traveller plan a 5-month New Zealand trip', () => {
+    const fiveMonths = planned('nz', 'NZ', '2026-11-01', '2027-03-31');
+    const brit = { passports: ['GB'], taxResidence: 'AE' };
+    assert.deepEqual(check(fiveMonths, [], brit).issues.filter((i) => i.category === 'entry'), []);
+    const yank = { passports: ['US'], taxResidence: 'AE' };
+    assert.equal(check(fiveMonths, [], yank).issues.find((i) => i.category === 'entry')?.on, '2027-02-01');
+  });
+});

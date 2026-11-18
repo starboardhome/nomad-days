@@ -6,7 +6,7 @@
  * - Real counts (dashboard, reminders) ignore planned trips until you confirm them.
  */
 import type { Jurisdiction, Rule, RuleOf } from '../rules/schema';
-import { applicability, type Profile } from './applicability';
+import { applicability, forTraveller, type Profile } from './applicability';
 import { toDayNum, toISO, range, type DayNum, type ISODate } from './days';
 import { evaluateRule } from './evaluate';
 import { visitEnd } from './evaluators/perVisit';
@@ -101,7 +101,8 @@ export const checkPlannedTrip = (
   const taxAfter: TaxAfter[] = [];
 
   for (const j of relevant) {
-    for (const rule of j.rules) {
+    for (const general of j.rules) {
+      const rule = forTraveller(general, profile);
       const a = applicability(rule, j, profile);
       if (a === 'visaRequired') visaNeeded.add(j.name);
       if (a !== 'applies') continue;

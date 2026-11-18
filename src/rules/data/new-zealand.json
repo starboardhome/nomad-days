@@ -10,10 +10,13 @@
       "kind": "perVisit",
       "label": "Visa waiver (NZeTA): up to 3 months per visit",
       "limit": { "unit": "months", "value": 3 },
+      "limitsByNationality": [
+        { "nationalities": ["GB"], "limit": { "unit": "months", "value": 6 }, "label": "Visa waiver (NZeTA): up to 6 months per visit for British citizens" }
+      ],
       "counting": "anyPartOfDay",
       "exemptNationalities": ["NZ", "AU"],
       "notes": [
-        "Most visa waiver visitors can stay up to 3 months per visit. British citizens can stay up to 6 months, but the app uses the shorter limit.",
+        "Most visa waiver visitors can stay up to 3 months per visit, and British citizens up to 6 months. The app uses the limit for your passport.",
         "You need an NZeTA before you travel. It can't be extended: to stay longer, apply for a visitor visa.",
         "Visitor visa holders can usually spend up to 9 months in any 18 months in New Zealand.",
         "Australian citizens can live and work in New Zealand without a visa."

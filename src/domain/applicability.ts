@@ -13,6 +13,13 @@ export type Applicability =
 const holdsAny = (profile: Profile, set: ReadonlySet<string>) =>
   profile.passports.some((p) => set.has(p));
 
+/** The rule as it applies to this traveller: a passport-specific limit replaces the general one */
+export const forTraveller = (rule: Rule, profile: Profile): Rule => {
+  if (rule.kind !== 'perVisit' || !rule.limitsByNationality) return rule;
+  const match = rule.limitsByNationality.find((o) => o.nationalities.some((n) => profile.passports.includes(n)));
+  return match ? { ...rule, limit: match.limit, label: match.label } : rule;
+};
+
 /** Whether a rule applies to this person. With several passports, the best one wins. */
 export const applicability = (rule: Rule, jurisdiction: Jurisdiction, profile: Profile): Applicability => {
   if (holdsAny(profile, rule.exemptNationalities)) return 'exempt';
