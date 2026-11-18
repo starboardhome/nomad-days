@@ -18,7 +18,7 @@
 1. Bump `expo.version` in `app.json`, plus `android.versionCode` and `ios.buildNumber` (both +1).
 2. Add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` **and** the same text as `<versionCode>001.txt`, `<versionCode>002.txt` and `<versionCode>003.txt` (500 characters at most). F-Droid publishes one APK per ABI with versionCode `1000 × code + 1/2/3` and looks changelogs up by that number. CI (`scripts/ci/check-changelogs.mjs`) fails if any are missing.
 3. Run `npm run test:unit && npm run typecheck && npm run rules:check`.
-4. Tag it: `git tag v<version> && git push --tags`. F-Droid builds from tags.
+4. Merge to main, then tag the merge commit by its full hash: `git fetch origin && git tag v<version> <full-hash> && git push origin v<version>`. F-Droid's update checker finds the tag and builds it within a few days; no merge request is needed unless the recipe itself changes.
 5. Build for the stores with EAS: `npx eas-cli@latest build --platform all --profile production`, then `npx eas-cli@latest submit --profile production`.
 
 ## EAS build profiles (`eas.json`)
@@ -40,7 +40,7 @@ Versions come from `app.json` (`appVersionSource: local`), so bump `version`, `a
 - [x] `eas.json` with `development`, `preview` and `production` profiles
 - [x] Link the EAS project (`npx eas-cli@latest init`): project `@starboardhome/nomad-days`
 - [x] Make the repository public (F-Droid only builds public source)
-- [x] Merge request to fdroiddata: [fdroid/fdroiddata!51068](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51068). Its pipeline passes; it's waiting for F-Droid review (see [F-Droid](#f-droid))
+- [x] Merge request to fdroiddata: [fdroid/fdroiddata!51068](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51068), **merged 17 November 2026** at 1.0.5 (see [F-Droid](#f-droid))
 
 ## Store screenshots
 
@@ -57,6 +57,8 @@ Screens and captions are in `SHOTS` in `scripts/dev/store-screenshots.cjs`; the 
 
 ## F-Droid
 
+The full process, every reviewer request and fix, and the mistakes to avoid are in the [`fdroid-release` skill](../.claude/skills/fdroid-release/SKILL.md). Claude Code loads it automatically in this repo; read it before changing the recipe or releasing for another app.
+
 The recipe is [`docs/fdroid/io.github.starboardhome.nomaddays.yml`](fdroid/io.github.starboardhome.nomaddays.yml). It follows the pattern of other Expo apps in fdroiddata:
 - Node from Debian forky (`apt-get install -t forky npm`), as F-Droid reviewers ask and as other Expo recipes do; it only runs at build time.
 - Expo modules built from source (`buildFromSource`) instead of their prebuilt AARs.
@@ -65,23 +67,25 @@ The recipe is [`docs/fdroid/io.github.starboardhome.nomaddays.yml`](fdroid/io.gi
 - NDK `27.1.12297006`, matching React Native's.
 - **One APK per CPU type** (armeabi-v7a, arm64-v8a, x86_64), with versionCode `1000 × upstream + 1/2/3`. The ABI is set with `printf '\nreactNativeArchitectures=…\n'` and `-PreactNativeArchitectures=…`. `expo prebuild` writes `gradle.properties` without a final newline, so a plain `echo >>` glued onto `expo.sqlite.useSQLCipher=true`, which silently dropped both the ABI split and SQLCipher (found in F-Droid review, October 2026). Two `grep -qx` guards now fail the build if either property is wrong. The universal APK was 131 MB; one ABI is about 45 MB. `VercodeOperation` lets auto-update compute these.
 - **`commit:` is the full commit hash** of the release tag, never the tag name (F-Droid's template requires this).
+- **Release builds are trimmed for F-Droid review:** no `INTERNET` (the app never goes online; `plugins/withDebugInternet.js` keeps it for debug builds so Metro works), no `USE_BIOMETRIC`, `USE_FINGERPRINT`, `SYSTEM_ALERT_WINDOW` or external storage (`android.blockedPermissions` in `app.json`), and R8 minify and resource shrinking on (`expo-build-properties`). CI checks the merged manifests and launches the R8 build on an emulator.
 - **Reproducible builds are off**, so F-Droid signs the APK with its own key. F-Droid and Play installs therefore can't update each other, and turning reproducible builds on later isn't possible for this app ID. Explain this in the merge request; the template asks for a reason.
 
 What has been checked, and how to check it again after dependency upgrades:
 - `fdroid lint` passes, and `fdroid rewritemeta` leaves the file unchanged (canonical format). fdroiddata CI runs fdroidserver from `master` with ruamel.yaml 0.18, which wraps long lines differently from the 2.4.5 release, so check the format with `pip install git+https://gitlab.com/fdroid/fdroidserver.git ruamel.yaml==0.18.10`.
 - The prebuild steps run cleanly on a checkout. Every `sed` matches, and `android/app/build.gradle` comes out with no `signingConfig`.
 - F-Droid's source scanner reports 0 problems. It deletes 137 prebuilt files under `node_modules` (Expo AARs and JARs, the optional libSQL and sqlite-vec libraries, and the dev-only esbuild and dotslash). It ignores the Hermes compiler and four Gradle files that point at React Native's local Maven repository.
-- **`fdroid build` passed** on F-Droid's CI for `v1.0.0` (single universal APK) (merge request pipeline, 4 October 2026), and all 9 jobs pass. The scanner warns about two harmless files, an icon font and a Windows DLL that ships with the Hermes compiler; these don't block the build. Each successful pipeline also produces a signed test APK in the `fdroid build` job's artifacts.
+- **`fdroid build` passed** on F-Droid's CI for `v1.0.5` (three per-ABI APKs with R8, merge request pipeline, 17 November 2026), and all 9 jobs pass. The scanner warns about two harmless files, an icon font and a Windows DLL that ships with the Hermes compiler; these don't block the build. Each successful pipeline also produces a signed test APK in the `fdroid build` job's artifacts.
 
 ### Opening the merge request
 
-Opened for 1.0.0, then closed by F-Droid for not following the template (ticked boxes the recipe didn't meet: tag instead of hash, no ABI split, no reproducible-builds reason, Reports warnings not explained). Fixed for 1.0.1 ([fdroid/fdroiddata!51068](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51068), from the fork `starboardhome/nomad-days` on GitLab). Later releases need no new merge request: F-Droid finds new `v*` tags (`UpdateCheckMode: Tags`) and adds the build itself. Use these steps only if the recipe has to change.
+Opened for 1.0.0, then closed by F-Droid for not following the template (ticked boxes the recipe didn't meet: tag instead of hash, no ABI split, no reproducible-builds reason, Reports warnings not explained). Fixed for 1.0.1, reviewed through 1.0.5 and merged on 17 November 2026 ([fdroid/fdroiddata!51068](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51068), from the fork `starboardhome/nomad-days` on GitLab). Later releases need no new merge request: F-Droid finds new `v*` tags (`UpdateCheckMode: Tags`) and adds the build itself. Use these steps only if the recipe has to change.
 
 1. Fork <https://gitlab.com/fdroid/fdroiddata> on GitLab and clone your fork.
 2. Create a branch named `io.github.starboardhome.nomaddays` and copy the recipe to `metadata/io.github.starboardhome.nomaddays.yml`.
 3. Run `fdroid lint io.github.starboardhome.nomaddays` and `fdroid rewritemeta io.github.starboardhome.nomaddays`. Install the tools with `pip install fdroidserver`, ideally in a virtualenv.
 4. Commit with the message `New app: Nomad Days`, push, and open the merge request using the **App inclusion** template. Tick only the boxes that are true, and write the reason under any that aren't (reproducible builds, Reports warnings). Don't verify your GitLab account to run CI; leave a note in the merge request instead.
 5. If the pipeline's build fails, fix the recipe on the branch. Mirror any fix back into `docs/fdroid/`.
+6. If you release while the merge request is open, update its recipe to the new tag (versionName, the three versionCodes and commits, `CurrentVersion*`) and leave a short note. Reviewers asked for this.
 
 Expect the reviewers to ask about the following:
 - **OpenSSL for SQLCipher:** it comes prebuilt from Maven Central (`io.github.ronickg:openssl`). Maven Central is an allowed repository, but they may ask.
