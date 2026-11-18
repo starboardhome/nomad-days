@@ -7,6 +7,13 @@
       "reason": "Only reached through expo-router > query-string@7, which require()s it; the fixed 0.5.1 is ESM-only, and npm's fix is expo-router 58 (Expo SDK 58). Worst case is a slow decode of a crafted nomaddays:// link on the user's own phone; the app has no server or network access. Remove with the SDK 58 upgrade.",
       "added": "2026-11-17",
       "expires": "2027-01-15"
+    },
+    {
+      "id": "GHSA-fc5q-39xc-vjpf",
+      "package": "picomatch",
+      "reason": "No patched release exists (<=4.0.7, latest is 4.0.7). Only reached through build tooling (expo > @expo/cli and @expo/metro-config, nativewind > tailwindcss, react-native > jest): glob patterns are our own config, and it isn't bundled into the app.",
+      "added": "2026-11-18",
+      "expires": "2027-01-15"
     }
   ]
 }
