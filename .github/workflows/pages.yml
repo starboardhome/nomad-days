@@ -26,6 +26,9 @@ jobs:
         run: |
           mkdir -p _src
           cp -r site/. _src/
+          # F-Droid's official badge, served from this site rather than hotlinked (https://f-droid.org/docs/Badges/)
+          mkdir -p _src/assets
+          curl -fsSL --retry 3 -o _src/assets/get-it-on-fdroid.png https://f-droid.org/badge/get-it-on.png
           { printf -- '---\nlayout: default\ntitle: Privacy policy\npermalink: /privacy/\n---\n\n'; cat docs/PRIVACY.md; } > _src/privacy.md
       - uses: actions/configure-pages@v5
       - uses: actions/jekyll-build-pages@v1

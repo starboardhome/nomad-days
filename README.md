@@ -8,6 +8,8 @@ Count your days abroad so you stay within the Schengen 90/180 rule, visitor limi
 
 Estimates only. This is not legal or tax advice.
 
+<a href="https://f-droid.org/packages/io.github.starboardhome.nomaddays/"><img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"></a>
+
 ## Development
 
 Expo SDK 57, React Native, TypeScript and Expo Router.
