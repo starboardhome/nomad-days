@@ -1,0 +1,41 @@
+{
+  "id": "jersey",
+  "name": "Jersey",
+  "countries": ["JE"],
+  "lastReviewed": "2026-11-18",
+  "rules": [
+    {
+      "id": "je-visitor-6-months",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "Visitors: up to 6 months per visit",
+      "limit": { "unit": "months", "value": 6 },
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["GB", "IE"],
+      "notes": [
+        "Jersey is in the Common Travel Area with the UK and Ireland, so there are no routine passport checks when you arrive from there. Visitor rules are the same as the UK's: up to 6 months, and you can't live there through repeated visits.",
+        "Since April 2026, visitors arriving from outside the Common Travel Area need an ETA unless they hold a visa. A UK, Jersey, Guernsey or Isle of Man ETA is accepted by all four.",
+        "The app counts each place in the Common Travel Area separately. Time in the UK on the same trip isn't added to this count."
+      ],
+      "sources": ["https://www.gov.je/Travel/InformationAdvice/Visitors/Pages/VisaPassportRequirements.aspx", "https://www.gov.uk/guidance/travelling-between-the-uk-and-ireland-isle-of-man-guernsey-or-jersey"]
+    },
+    {
+      "id": "je-183-days",
+      "category": "tax",
+      "kind": "taxYear",
+      "label": "Tax resident from 183 days in a calendar year",
+      "threshold": 183,
+      "yearStart": "01-01",
+      "counting": "midnight",
+      "notes": [
+        "Jersey's tax year is the calendar year. The app counts nights spent in Jersey.",
+        "If you keep a place to live in Jersey, a single night there in the year makes you resident.",
+        "Regular visitors who average more than 90 nights a year over 4 years become resident from the 5th year."
+      ],
+      "sources": [
+        "https://www.gov.je/TaxesMoney/IncomeTax/Individuals/IncomeTaxCircumstances/Pages/ResidencyForJerseyTax.aspx",
+        "https://www.oecd.org/tax/automatic-exchange/crs-implementation-and-assistance/tax-residency/Jersey-Residency.pdf"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "id": "canada",
+  "name": "Canada",
+  "countries": ["CA"],
+  "lastReviewed": "2026-11-18",
+  "rules": [
+    {
+      "id": "ca-visitor-6-months",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "Visitors: usually up to 6 months per entry",
+      "limit": { "unit": "months", "value": 6 },
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["CA"],
+      "notes": [
+        "The border officer decides how long you can stay and may allow less or more than 6 months. Check your passport stamp or visitor record.",
+        "Most visa-exempt travellers need an eTA to fly in; US citizens don't. Other passports need a visitor visa.",
+        "To stay longer, apply to extend before your status expires."
+      ],
+      "sources": ["https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada/extend-stay.html"]
+    },
+    {
+      "id": "ca-sojourning-183",
+      "category": "tax",
+      "kind": "taxYear",
+      "label": "Deemed resident: 183 days in a calendar year",
+      "threshold": 183,
+      "yearStart": "01-01",
+      "counting": "anyPartOfDay",
+      "notes": [
+        "If you stay in Canada for 183 days or more in a calendar year, you can be a deemed resident for the whole year and taxed on your worldwide income. A tax treaty can change this.",
+        "Each day or part of a day in Canada counts.",
+        "Significant residential ties (a home, spouse or dependants in Canada) can make you resident with fewer days."
+      ],
+      "sources": [
+        "https://www.canada.ca/en/revenue-agency/services/tax/international-non-residents/individuals-leaving-entering-canada-non-residents/deemed-residents.html"
+      ]
+    }
+  ]
+}

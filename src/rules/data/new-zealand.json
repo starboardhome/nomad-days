@@ -1,0 +1,39 @@
+{
+  "id": "new-zealand",
+  "name": "New Zealand",
+  "countries": ["NZ"],
+  "lastReviewed": "2026-11-18",
+  "rules": [
+    {
+      "id": "nz-visa-waiver-3-months",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "Visa waiver (NZeTA): up to 3 months per visit",
+      "limit": { "unit": "months", "value": 3 },
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["NZ", "AU"],
+      "notes": [
+        "Most visa waiver visitors can stay up to 3 months per visit. British citizens can stay up to 6 months, but the app uses the shorter limit.",
+        "You need an NZeTA before you travel. It can't be extended: to stay longer, apply for a visitor visa.",
+        "Visitor visa holders can usually spend up to 9 months in any 18 months in New Zealand.",
+        "Australian citizens can live and work in New Zealand without a visa."
+      ],
+      "sources": ["https://www.immigration.govt.nz/visas/visa-waiver-visitor-visa"]
+    },
+    {
+      "id": "nz-183-days-12-months",
+      "category": "tax",
+      "kind": "rolling",
+      "label": "Tax resident after more than 183 days in any 12 months",
+      "maxDays": 183,
+      "windowDays": 365,
+      "counting": "anyPartOfDay",
+      "notes": [
+        "Part days count as whole days, and the days don't need to be in a row.",
+        "Once you pass 183 days, you're treated as resident from the first of those days.",
+        "Having a permanent place of abode in New Zealand makes you resident however few days you spend there."
+      ],
+      "sources": ["https://www.ird.govt.nz/international-tax/individuals/tax-residency-status-for-individuals"]
+    }
+  ]
+}

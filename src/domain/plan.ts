@@ -111,13 +111,16 @@ export const checkPlannedTrip = (
       const first = range(entry, exit).find((d) => breachedOn(rule, p, d));
       if (first !== undefined) {
         issues.push({ ruleId: rule.id, jurisdiction: j.name, rule: rule.label, category: rule.category, on: toISO(first) });
-      } else if (rule.kind === 'rolling' || rule.kind === 'perVisit') {
+      } else if (rule.category === 'entry' && (rule.kind === 'rolling' || rule.kind === 'perVisit')) {
         const days = margin(rule, p, exit);
         if (!spare || days < spare.days) spare = { days, jurisdiction: j.name };
       } else {
         // As of the day after the trip: days already counted, including the trip
         const after = evaluateRule(rule, p, exit + 1);
-        const daysLeft = Math.max(0, Math.ceil(after.limit - after.used - 1e-9) - 1); // reaching the limit = resident
+        const daysLeft =
+          rule.kind === 'rolling'
+            ? consecutiveAllowance(p, rule, exit + 1) // a rolling test is only broken by going over it (NZ: more than 183 days)
+            : Math.max(0, Math.ceil(after.limit - after.used - 1e-9) - 1); // reaching the limit = resident
         taxAfter.push({ ruleId: rule.id, jurisdiction: j.name, used: after.used, limit: after.limit, daysLeft, resetsOn: after.resetsOn });
       }
     }

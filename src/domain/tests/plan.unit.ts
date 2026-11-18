@@ -80,6 +80,21 @@ describe('planned trip checks', () => {
   });
 });
 
+describe('planned trips under a rolling tax test (New Zealand)', () => {
+  it('flags the first day over 183 in 12 months', () => {
+    const r = check(planned('nz', 'NZ', '2026-10-10', '2026-10-12'), [trip('a', 'NZ', '2026-04-01', '2026-09-30')]); // 183 days already
+    assert.deepEqual(r.issues.map((i) => [i.ruleId, i.category, i.on]), [['nz-183-days-12-months', 'tax', '2026-10-10']]);
+  });
+
+  it('reports the days left after the trip as a tax estimate, not as entry-rule spare days', () => {
+    const r = check(planned('nz', 'NZ', '2026-11-01', '2026-11-10'), [trip('a', 'NZ', '2026-08-01', '2026-08-31')]);
+    assert.deepEqual(r.issues, []);
+    assert.equal(r.spare, undefined); // AU passports are exempt from the visitor limit
+    const [nz] = r.taxAfter;
+    assert.deepEqual([nz.ruleId, nz.used, nz.limit, nz.daysLeft], ['nz-183-days-12-months', 41, 183, 142]);
+  });
+});
+
 describe('planned trip lists', () => {
   const stays = [summer, planned('a', 'ES', '2026-09-30', '2026-10-05'), planned('b', 'IT', '2026-12-01', '2026-12-02'), planned('c', 'PT', '2026-11-01', '2026-11-02')];
 

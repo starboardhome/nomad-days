@@ -86,6 +86,7 @@ const entryLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' |
 /** Tax headline. When the end of the (tax) year is what limits the count, say so instead of giving a number. */
 const taxHeadline = (s: NonNullable<RuleResult['status']>, weighted: boolean): string => {
   if (s.level === 'over') return 'Tax residency threshold reached';
+  if (s.level === 'blocked') return 'At the limit: one more day makes you tax resident';
   const yearEnd = s.resetsOn ? toDayNum(s.resetsOn) - 1 : undefined;
   if (s.lastSafeDay && yearEnd !== undefined && toDayNum(s.lastSafeDay) >= yearEnd) {
     return weighted
@@ -97,13 +98,21 @@ const taxHeadline = (s: NonNullable<RuleResult['status']>, weighted: boolean): s
     : `${plural(s.daysLeft, 'day')} before tax residency`;
 };
 
+/** "112 of 183 days this tax year" (or, for a rolling test such as New Zealand's, "in the last 365") */
+const taxUsage = (rule: RuleResult['rule'], used: number, limit: number) =>
+  rule.kind === 'rolling'
+    ? `${used} of ${limit} days in the last ${rule.windowDays}`
+    : rule.kind === 'weightedYears'
+      ? `${used} of ${limit} weighted days this year`
+      : `${used} of ${limit} days this tax year`;
+
 const taxLine = ({ rule, status: s }: RuleResult): Pick<RuleLine, 'headline' | 'details'> => {
   if (!s) return { headline: '', details: [] };
   const weighted = rule.kind === 'weightedYears';
   return {
     headline: taxHeadline(s, weighted),
     details: compact([
-      `${s.used} of ${s.limit} ${weighted ? 'weighted days' : 'days'} this ${weighted ? 'year' : 'tax year'}`,
+      taxUsage(rule, s.used, s.limit),
       s.lastSafeDay && s.level !== 'over' && `Safe until ${d(s.lastSafeDay)} if you ${s.present ? 'stay' : 'arrive today'}`,
       s.resetsOn && `Count resets ${d(s.resetsOn)}`,
     ]),
@@ -135,10 +144,13 @@ const planLines = (r: RuleResult, upcoming: readonly PlannedItem[], today: DayNu
     if (!after) return [];
     // The trip may end in a later tax year than today's count
     const laterYear = after.resetsOn && after.resetsOn !== r.status?.resetsOn;
-    const period = laterYear ? ` in the tax year to ${formatDate(toISO(toDayNum(after.resetsOn!) - 1))}` : '';
-    return [
-      { tone: 'ok', text: `${label}: ${plural(after.daysLeft, 'day')} before tax residency (${after.used} of ${after.limit}${period || ' this tax year'})` },
-    ];
+    const period =
+      r.rule.kind === 'rolling'
+        ? ` days in the last ${r.rule.windowDays}`
+        : laterYear
+          ? ` in the tax year to ${formatDate(toISO(toDayNum(after.resetsOn!) - 1))}`
+          : ' this tax year';
+    return [{ tone: 'ok', text: `${label}: ${plural(after.daysLeft, 'day')} before tax residency (${after.used} of ${after.limit}${period})` }];
   });
 };
 
