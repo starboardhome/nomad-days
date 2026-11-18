@@ -7,7 +7,7 @@ export type Profile = Readonly<{
 
 export type Applicability =
   | 'applies'
-  | 'exempt' //        e.g. an EU passport in Schengen, or already tax resident there
+  | 'exempt' //        e.g. an EU passport in Schengen, or you live there (your tax residence)
   | 'visaRequired'; // no passport qualifies for this visa-free route
 
 const holdsAny = (profile: Profile, set: ReadonlySet<string>) =>
@@ -23,7 +23,8 @@ export const forTraveller = (rule: Rule, profile: Profile): Rule => {
 /** Whether a rule applies to this person. With several passports, the best one wins. */
 export const applicability = (rule: Rule, jurisdiction: Jurisdiction, profile: Profile): Applicability => {
   if (holdsAny(profile, rule.exemptNationalities)) return 'exempt';
-  if (rule.category === 'tax' && jurisdiction.countries.has(profile.taxResidence)) return 'exempt';
+  // Where you live (are tax resident), you're neither a visitor nor about to become tax resident
+  if (jurisdiction.countries.has(profile.taxResidence)) return 'exempt';
   if (rule.eligibleNationalities && !holdsAny(profile, rule.eligibleNationalities)) return 'visaRequired';
   return 'applies';
 };

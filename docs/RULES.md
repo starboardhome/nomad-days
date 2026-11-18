@@ -6,9 +6,9 @@ Stay and tax rules ship with the app in `src/rules/data/*.json`. They change onl
 
 | kind | Use for | Key fields |
 |---|---|---|
-| `rolling` | Schengen 90/180; New Zealand's tax test (more than 183 days in any 12 months) | `maxDays`, `windowDays` |
+| `rolling` | Schengen 90/180; New Zealand and UAE tax tests (183 days in any 12 months) | `maxDays`, `windowDays` |
 | `perVisit` | UK, Canada and Crown dependencies 6 months, Australia and New Zealand 3 months, US Visa Waiver 90 days | `limit: { unit: "days" \| "months", value }`; optional `limitsByNationality` for a different limit for some passports (first match wins) |
-| `taxYear` | UK SRT, Australia (from 1 July), Canada, Isle of Man, Jersey, Guernsey (91 days) | `threshold`, `yearStart` (`"MM-DD"`, e.g. `"04-06"`, `"01-01"`) |
+| `taxYear` | UK SRT, Australia (from 1 July), Canada, Isle of Man, Jersey, Guernsey (91 days), Singapore, Panama (more than 183, so `threshold` 184) | `threshold`, `yearStart` (`"MM-DD"`, e.g. `"04-06"`, `"01-01"`) |
 | `weightedYears` | US substantial presence test | `threshold`, `minCurrentYearDays`, `yearDivisors` (`[1, 3, 6]`) |
 
 Common fields:
@@ -43,3 +43,7 @@ CI runs `rules:check` on every push. A monthly run fails if any file hasn't been
 - **New Zealand:** the permanent place of abode test isn't modelled.
 - **Canada:** the stay is set by the border officer (usually 6 months). Residential ties, which can make you a factual resident sooner, aren't modelled.
 - **Crown dependencies (Isle of Man, Jersey, Guernsey):** the 4-year average tests, Jersey's place-of-abode test and Guernsey's 35-day test are in notes, not modelled. Each is counted separately from the UK, although they share the Common Travel Area.
+- **UAE:** passports that get 90 days within 180 are shown 30 days per visit (the shorter visa-on-arrival period). The 90-day residency route (residence permit or GCC nationality plus a home or work there) is in notes.
+- **Singapore:** the 90-day passport list covers the EU, Switzerland, Norway, the UK, US, Australia, New Zealand, Japan and South Korea; everyone else gets 30 days. The two-year concession isn't modelled.
+- **Panama:** 'or in the year before' and any home-based residency route aren't modelled.
+- **Where you live:** no rules are applied in the country you set as your tax residence (you're not a visitor there), and its card is hidden.

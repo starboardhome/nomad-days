@@ -131,9 +131,10 @@ describe('dashboard model', () => {
   });
 
   it('explains rules that do not apply', () => {
-    const data = withData({ profile: { taxResidence: 'GB', passports: ['IE'] }, stays: [{ id: 'g', country: 'GB', entry: '2026-09-01' }] });
-    const uk = buildDashboard(data, today).cards[0];
-    assert.deepEqual(uk.rules.map((r) => [r.level, r.headline]), [
+    // A US citizen is exempt from both the Visa Waiver limit and the day-count tax test
+    const data = withData({ profile: { taxResidence: 'AE', passports: ['US'] }, stays: [{ id: 'u', country: 'US', entry: '2026-09-01' }] });
+    const us = buildDashboard(data, today).cards[0];
+    assert.deepEqual(us.rules.map((r) => [r.level, r.headline]), [
       ['na', 'Doesn’t apply to you'],
       ['na', 'Doesn’t apply to you'],
     ]);
@@ -213,7 +214,7 @@ describe('dashboard model', () => {
     });
 
     it('says when nothing applies', () => {
-      const data = withData({ profile: { taxResidence: 'GB', passports: ['IE'] }, stays: [{ id: 'g', country: 'GB', entry: '2026-09-01' }] });
+      const data = withData({ profile: { taxResidence: 'AE', passports: ['US'] }, stays: [{ id: 'u', country: 'US', entry: '2026-09-01' }] });
       assert.deepEqual(buildDashboard(data, today).cards[0].summary, { text: 'Doesn’t apply to you', level: 'na' });
     });
 
@@ -224,6 +225,12 @@ describe('dashboard model', () => {
       assert.equal(tax.details[0], '31 of 183 days in the last 365');
       assert.equal(tax.headline, '152 days before tax residency');
     });
+  });
+
+  it('leaves out the country you live in', () => {
+    // UAE tax resident, back home after a trip to France
+    const data = withData({ profile: { taxResidence: 'AE', passports: ['AU'] }, stays: [{ id: 'f', country: 'FR', entry: '2026-08-01', exit: '2026-08-10' }, { id: 'a', country: 'AE', entry: '2026-08-11' }] });
+    assert.deepEqual(buildDashboard(data, today).cards.map((c) => c.id), ['schengen']);
   });
 
   it('describes what is available when you are not there', () => {

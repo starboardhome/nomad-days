@@ -1,0 +1,39 @@
+{
+  "id": "panama",
+  "name": "Panama",
+  "countries": ["PA"],
+  "lastReviewed": "2026-11-18",
+  "rules": [
+    {
+      "id": "pa-tourist-90-days",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "Tourists: 90 days per visit",
+      "limit": { "unit": "days", "value": 90 },
+      "limitsByNationality": [
+        { "nationalities": ["US", "CA"], "limit": { "unit": "days", "value": 180 }, "label": "Tourists: 180 days per visit for US and Canadian citizens" }
+      ],
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["PA"],
+      "notes": [
+        "Most visa-exempt tourists can stay up to 90 days. US and Canadian citizens can stay up to 180 days.",
+        "Some passports need a visa before travelling. A tourist stay doesn't allow you to work."
+      ],
+      "sources": ["https://www.migracion.gob.pa/"]
+    },
+    {
+      "id": "pa-more-than-183-days",
+      "category": "tax",
+      "kind": "taxYear",
+      "label": "Tax resident from more than 183 days in a year",
+      "threshold": 184,
+      "yearStart": "01-01",
+      "counting": "anyPartOfDay",
+      "notes": [
+        "You're a Panama tax resident if you're in Panama for more than 183 days in the fiscal year (the calendar year) or in the year before. The days don't need to be in a row.",
+        "Panama taxes only income from Panama. Foreign income isn't taxed, even for residents."
+      ],
+      "sources": ["https://dgi.mef.gob.pa/"]
+    }
+  ]
+}

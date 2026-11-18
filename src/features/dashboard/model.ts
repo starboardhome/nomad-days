@@ -238,8 +238,10 @@ export const buildDashboard = (data: AppData, today: DayNum): Dashboard => {
   const upcoming = upcomingPlans(data, today);
   // Bundled rules show where you've been or plan to go; your own rules always show (you added them
   // for a reason, often before the trip)
+  // ...except where you live: none of its rules apply to you there
   const relevant = (j: Jurisdiction) =>
-    isCustomJurisdiction(j.id) || [...real, ...upcoming.map((p) => p.trip)].some((s) => j.countries.has(s.country));
+    isCustomJurisdiction(j.id) ||
+    (!j.countries.has(taxResidence) && [...real, ...upcoming.map((p) => p.trip)].some((s) => j.countries.has(s.country)));
   const results = evaluateAll(js.filter(relevant), real, profile, today, true);
   const answeredTies = data.settings.ukTies?.leaver !== undefined;
   const cards = results.map((r) => toCard(r, upcoming, today, answeredTies)).sort(byPriority);

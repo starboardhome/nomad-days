@@ -96,3 +96,31 @@ describe('passport-specific limits (New Zealand visa waiver)', () => {
     assert.equal(entryRule(['AU', 'GB']).applicability, 'exempt');
   });
 });
+
+describe('visitor limits by passport (Singapore, Panama)', () => {
+  const visit = (jId: string, country: string, passports: string[]) =>
+    evaluateJurisdiction(bundled(jId), [stay(country, '2026-09-01')], { passports, taxResidence: 'AE' }, today).results.find(
+      (r) => r.rule.category === 'entry',
+    )!;
+
+  it('Singapore: 90 days for listed passports, 30 for others', () => {
+    assert.equal(visit('singapore', 'SG', ['GB']).status!.limit, 90);
+    assert.equal(visit('singapore', 'SG', ['FR']).status!.limit, 90);
+    assert.equal(visit('singapore', 'SG', ['IN']).status!.limit, 30);
+  });
+
+  it('Panama: 180 days for US and Canadian citizens, 90 for others', () => {
+    assert.equal(visit('panama', 'PA', ['CA']).status!.limit, 180);
+    assert.equal(visit('panama', 'PA', ['GB']).status!.limit, 90);
+  });
+});
+
+describe('where you live', () => {
+  it('skips visitor limits as well as tax tests in your country of tax residence', () => {
+    const uae = bundled('uae');
+    const resident = { passports: ['AU'], taxResidence: 'AE' };
+    for (const rule of uae.rules) assert.equal(applicability(rule, uae, resident), 'exempt');
+    const visitor = { passports: ['AU'], taxResidence: 'GB' };
+    assert.equal(applicability(uae.rules[0], uae, visitor), 'applies');
+  });
+});

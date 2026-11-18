@@ -17,8 +17,11 @@ Log your trips (country, arrival and departure). Each region you've visited gets
 * New Zealand: up to 3 months per visit on the visa waiver (6 months for British citizens), and more than 183 days in any 12 months
 * Canada: usually up to 6 months per entry, and 183 days in a calendar year
 * Isle of Man, Jersey and Guernsey: up to 6 months per visit, and each island's tax-residency day count
+* United Arab Emirates: 30 days per visit, and 183 days in any 12 months
+* Singapore: 30 or 90 days per visit depending on your passport, and 183 days in a calendar year
+* Panama: 90 days per visit (180 for US and Canadian citizens), and more than 183 days in a year
 
-Limits follow your passports: for example, Australians and New Zealanders are exempt from each other's visitor limits, and EU citizens from the Schengen rule.
+Limits follow your passports: for example, Australians and New Zealanders are exempt from each other's visitor limits, and EU citizens from the Schengen rule. Nothing is counted for the country you live in.
 
 You can add your own rules for countries that aren't bundled yet: a limit per visit, a rolling window (for example 90 days in 180), or a tax-days threshold.
 

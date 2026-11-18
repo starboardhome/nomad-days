@@ -196,3 +196,33 @@ describe('Crown dependencies (taxYear, midnights)', () => {
     assert.equal(at('guernsey', 'gg-91-days', 'GG', '2026-01-01', '2026-04-01').level, 'over'); // 1 Jan – 1 Apr
   });
 });
+
+describe('UAE: 183 days in any 12 months (rolling tax test)', () => {
+  const rule = ruleOf('uae', 'uae-183-days-12-months', 'rolling');
+  const on = (iso: string) => evaluateRolling(rule, presence('uae', 'anyPartOfDay', [stay('AE', '2026-01-01')], day(iso)), day(iso));
+
+  it('makes you resident on the 183rd day, part days counting', () => {
+    const before = on('2026-07-01'); // 182 days
+    assert.equal(before.used, 182);
+    assert.notEqual(before.level, 'over');
+    assert.equal(on('2026-07-02').level, 'over'); // 183 days or more
+  });
+});
+
+describe('Panama: more than 183 days in the year', () => {
+  const rule = ruleOf('panama', 'pa-more-than-183-days', 'taxYear');
+  const on = (iso: string) => evaluateTaxYear(rule, presence('panama', 'anyPartOfDay', [stay('PA', '2026-01-01')], day(iso)), day(iso));
+
+  it('is not resident at exactly 183 days, but is on the 184th', () => {
+    assert.notEqual(on('2026-07-02').level, 'over'); // 183 days
+    assert.equal(on('2026-07-03').level, 'over');
+  });
+});
+
+describe('Singapore: 183 days in a calendar year', () => {
+  const rule = ruleOf('singapore', 'sg-183-days', 'taxYear');
+  it('flags the 183rd day', () => {
+    const p = presence('singapore', 'anyPartOfDay', [stay('SG', '2026-01-01')], day('2026-07-02'));
+    assert.equal(evaluateTaxYear(rule, p, day('2026-07-02')).level, 'over');
+  });
+});
