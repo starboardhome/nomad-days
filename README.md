@@ -3,7 +3,8 @@
 Count your days abroad so you stay within the Schengen 90/180 rule, visitor limits and tax-residency thresholds. Everything stays on your phone.
 
 - **Log trips** (country, arrival and departure) and see days used, days left, your last safe day, and when you can return.
-- **Bundled rules** for Schengen, the UK and the US, plus **your own rules** for any other country.
+- **Bundled rules** for Schengen, the UK, the US, Australia, New Zealand, Canada, the Isle of Man, Jersey and Guernsey, plus **your own rules** for any other country.
+- **One number per card:** the days left under whichever rule runs out first, with the details a tap away.
 - **Private:** no accounts, servers or analytics. Data is encrypted on the device, and backups are encrypted files you export.
 
 Estimates only. This is not legal or tax advice.
