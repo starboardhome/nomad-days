@@ -34,10 +34,16 @@ const RollingSchema = RuleBase.extend({
   windowDays: PositiveInt,
 });
 
+const LimitSchema = z.object({ unit: z.enum(['days', 'months']), value: PositiveInt });
+
 /** Maximum length of a single continuous visit (UK 6 months, US VWP 90 days) */
 const PerVisitSchema = RuleBase.extend({
   kind: z.literal('perVisit'),
-  limit: z.object({ unit: z.enum(['days', 'months']), value: PositiveInt }),
+  limit: LimitSchema,
+  /** A different limit for some passports (NZ: 6 months for British citizens). The first match wins. */
+  limitsByNationality: z
+    .array(z.object({ nationalities: z.array(Iso2Schema).min(1), limit: LimitSchema, label: z.string().min(1) }))
+    .optional(),
 });
 
 /** Resident once `threshold` days are reached in a (tax) year starting on `yearStart` */

@@ -16,7 +16,7 @@ export default function TaxResidenceStep() {
       <StepHeader
         step={1}
         title="Where are you tax resident?"
-        subtitle="Nomad Days skips tax-day tests for the country you're already resident in."
+        subtitle="Nomad Days skips visitor limits and tax-day tests for the country you live in."
       />
       <CountryField label="Tax residence" value={residence} onChange={setResidence} />
       <PrivacyNote />

@@ -1,0 +1,43 @@
+{
+  "id": "uae",
+  "name": "United Arab Emirates",
+  "countries": ["AE"],
+  "lastReviewed": "2026-11-18",
+  "rules": [
+    {
+      "id": "uae-visitor-30-days",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "Visa on arrival: 30 days per visit",
+      "limit": { "unit": "days", "value": 30 },
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["AE", "SA", "KW", "BH", "OM", "QA"],
+      "notes": [
+        "Visa-on-arrival passports get either 30 days per visit or 90 days within 180 days, depending on nationality. The app uses 30 days, so check your entry stamp if you were given 90.",
+        "Other passports need a visa before travelling, and the stay is set by that visa.",
+        "Citizens of the other Gulf states (GCC) can visit freely."
+      ],
+      "sources": [
+        "https://u.ae/en/information-and-services/visa-and-emirates-id/do-you-need-an-entry-permit-or-a-visa-to-enter-the-uae"
+      ]
+    },
+    {
+      "id": "uae-183-days-12-months",
+      "category": "tax",
+      "kind": "rolling",
+      "label": "183 days in any 12 months",
+      "maxDays": 182,
+      "windowDays": 365,
+      "counting": "anyPartOfDay",
+      "notes": [
+        "You're UAE tax resident if you're in the UAE for 183 days or more in any 12 consecutive months. Any part of a day counts as a day, and the days don't need to be in a row.",
+        "You can also be resident from 90 days if you're a UAE or GCC national or hold a UAE residence permit, and have a permanent home or work or business in the UAE.",
+        "The UAE has no personal income tax. Residency matters mainly for a tax residence certificate and for tax treaties."
+      ],
+      "sources": [
+        "https://uaelegislation.gov.ae/en/legislations/1574",
+        "https://www.pwc.com/m1/en/tax/documents/2023/uae-tax-residence.pdf"
+      ]
+    }
+  ]
+}

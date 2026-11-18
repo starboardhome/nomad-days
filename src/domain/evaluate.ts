@@ -1,5 +1,5 @@
 import type { Jurisdiction, Rule, RuleKind, RuleOf } from '../rules/schema';
-import { applicability, type Applicability, type Profile } from './applicability';
+import { applicability, forTraveller, type Applicability, type Profile } from './applicability';
 import { localToday, type DayNum } from './days';
 import { evaluatePerVisit } from './evaluators/perVisit';
 import { evaluateRolling } from './evaluators/rolling';
@@ -43,7 +43,8 @@ export const evaluateJurisdiction = (
   profile: Profile,
   today: DayNum = localToday(),
 ): JurisdictionResult => {
-  const results = jurisdiction.rules.map((rule): RuleResult => {
+  const results = jurisdiction.rules.map((general): RuleResult => {
+    const rule = forTraveller(general, profile);
     const a = applicability(rule, jurisdiction, profile);
     return a !== 'applies'
       ? { rule, applicability: a }

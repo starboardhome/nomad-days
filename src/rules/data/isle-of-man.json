@@ -1,0 +1,42 @@
+{
+  "id": "isle-of-man",
+  "name": "Isle of Man",
+  "countries": ["IM"],
+  "lastReviewed": "2026-11-18",
+  "rules": [
+    {
+      "id": "im-visitor-6-months",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "Visitors: up to 6 months per visit",
+      "limit": { "unit": "months", "value": 6 },
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["GB", "IE"],
+      "notes": [
+        "The Isle of Man is in the Common Travel Area with the UK and Ireland, so there are no routine passport checks when you arrive from there. Visitor rules are the same as the UK's: up to 6 months, and you can't live there through repeated visits.",
+        "Since April 2026, visitors arriving from outside the Common Travel Area need an ETA unless they hold a visa. A UK, Jersey, Guernsey or Isle of Man ETA is accepted by all four.",
+        "The app counts each place in the Common Travel Area separately. Time in the UK on the same trip isn't added to this count."
+      ],
+      "sources": ["https://www.gov.uk/guidance/travelling-between-the-uk-and-ireland-isle-of-man-guernsey-or-jersey"]
+    },
+    {
+      "id": "im-183-days",
+      "category": "tax",
+      "kind": "taxYear",
+      "label": "Tax resident from 183 days in the tax year",
+      "threshold": 183,
+      "yearStart": "04-06",
+      "counting": "midnight",
+      "notes": [
+        "The Isle of Man tax year runs from 6 April to 5 April, as in the UK.",
+        "Visitors who average more than 90 days a year over 4 tax years become resident from the 5th year.",
+        "If you arrive intending to live there, you're resident from the day you arrive, however few days you spend.",
+        "Days of arrival and departure are normally ignored, so the app counts nights."
+      ],
+      "sources": [
+        "https://www.gov.im/categories/tax-vat-and-your-money/income-tax-and-national-insurance/individuals/residents/",
+        "https://www.oecd.org/tax/automatic-exchange/crs-implementation-and-assistance/tax-residency/Isle-of-Man-Tax-Residency.pdf"
+      ]
+    }
+  ]
+}

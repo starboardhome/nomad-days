@@ -69,3 +69,58 @@ describe('custom jurisdictions', () => {
     );
   });
 });
+
+describe('passport-specific limits (New Zealand visa waiver)', () => {
+  const nz = bundled('new-zealand');
+  // Arrived 1 Sep: day 28 of the visit on 28 Sep
+  const entryRule = (passports: string[]) =>
+    evaluateJurisdiction(nz, [stay('NZ', '2026-09-01')], { passports, taxResidence: 'AE' }, today).results.find(
+      (r) => r.rule.category === 'entry',
+    )!;
+
+  it('gives most visa waiver passports 3 months', () => {
+    const r = entryRule(['US']);
+    assert.equal(r.rule.label, 'Visa waiver (NZeTA): up to 3 months per visit');
+    assert.equal(r.status!.lastSafeDay, '2026-11-30');
+  });
+
+  it('gives British citizens 6 months, also when they hold another passport', () => {
+    for (const passports of [['GB'], ['US', 'GB']]) {
+      const r = entryRule(passports);
+      assert.equal(r.rule.label, 'Visa waiver (NZeTA): up to 6 months per visit for British citizens');
+      assert.equal(r.status!.lastSafeDay, '2027-02-28');
+    }
+  });
+
+  it('still exempts Australians', () => {
+    assert.equal(entryRule(['AU', 'GB']).applicability, 'exempt');
+  });
+});
+
+describe('visitor limits by passport (Singapore, Panama)', () => {
+  const visit = (jId: string, country: string, passports: string[]) =>
+    evaluateJurisdiction(bundled(jId), [stay(country, '2026-09-01')], { passports, taxResidence: 'AE' }, today).results.find(
+      (r) => r.rule.category === 'entry',
+    )!;
+
+  it('Singapore: 90 days for listed passports, 30 for others', () => {
+    assert.equal(visit('singapore', 'SG', ['GB']).status!.limit, 90);
+    assert.equal(visit('singapore', 'SG', ['FR']).status!.limit, 90);
+    assert.equal(visit('singapore', 'SG', ['IN']).status!.limit, 30);
+  });
+
+  it('Panama: 180 days for US and Canadian citizens, 90 for others', () => {
+    assert.equal(visit('panama', 'PA', ['CA']).status!.limit, 180);
+    assert.equal(visit('panama', 'PA', ['GB']).status!.limit, 90);
+  });
+});
+
+describe('where you live', () => {
+  it('skips visitor limits as well as tax tests in your country of tax residence', () => {
+    const uae = bundled('uae');
+    const resident = { passports: ['AU'], taxResidence: 'AE' };
+    for (const rule of uae.rules) assert.equal(applicability(rule, uae, resident), 'exempt');
+    const visitor = { passports: ['AU'], taxResidence: 'GB' };
+    assert.equal(applicability(uae.rules[0], uae, visitor), 'applies');
+  });
+});

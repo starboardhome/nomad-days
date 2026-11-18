@@ -1,0 +1,44 @@
+{
+  "id": "australia",
+  "name": "Australia",
+  "countries": ["AU"],
+  "lastReviewed": "2026-11-18",
+  "rules": [
+    {
+      "id": "au-visitor-3-months",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "ETA or eVisitor: up to 3 months per visit",
+      "limit": { "unit": "months", "value": 3 },
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["AU", "NZ"],
+      "notes": [
+        "The ETA (subclass 601) and eVisitor (subclass 651) let you visit as often as you like while they're valid (usually 12 months), staying up to 3 months each time.",
+        "A Visitor visa (subclass 600) can allow 3, 6 or 12 months. If you have one, check the stay period on your grant notice.",
+        "New Zealand citizens get a Special Category visa on arrival and can stay indefinitely."
+      ],
+      "sources": [
+        "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/electronic-travel-authority-601",
+        "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/evisitor-651"
+      ]
+    },
+    {
+      "id": "au-183-day-test",
+      "category": "tax",
+      "kind": "taxYear",
+      "label": "183-day test: 183 days in the income year",
+      "threshold": 183,
+      "yearStart": "07-01",
+      "counting": "anyPartOfDay",
+      "notes": [
+        "The Australian income year runs from 1 July to 30 June. Days don't need to be in a row, and the days you arrive and leave count.",
+        "183 days usually makes you resident, but not if your usual home is outside Australia and you don't intend to live there.",
+        "You can be resident with fewer days under the 'resides' or domicile tests, for example if you've moved to Australia."
+      ],
+      "sources": [
+        "https://www.ato.gov.au/individuals-and-families/coming-to-australia-or-going-overseas/residency-tests/residency-the-183-day-test",
+        "https://www.ato.gov.au/individuals-and-families/coming-to-australia-or-going-overseas/your-tax-residency/australian-resident-for-tax-purposes"
+      ]
+    }
+  ]
+}

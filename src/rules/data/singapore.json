@@ -1,0 +1,46 @@
+{
+  "id": "singapore",
+  "name": "Singapore",
+  "countries": ["SG"],
+  "lastReviewed": "2026-11-18",
+  "rules": [
+    {
+      "id": "sg-visitor-30-days",
+      "category": "entry",
+      "kind": "perVisit",
+      "label": "Visit pass: 30 days per visit",
+      "limit": { "unit": "days", "value": 30 },
+      "limitsByNationality": [
+        {
+          "nationalities": ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "CH", "NO", "GB", "US", "AU", "NZ", "JP", "KR"],
+          "limit": { "unit": "days", "value": 90 },
+          "label": "Visit pass: 90 days per visit"
+        }
+      ],
+      "counting": "anyPartOfDay",
+      "exemptNationalities": ["SG"],
+      "notes": [
+        "Visa-free visitors get a visit pass of 30 or 90 days on arrival, depending on passport. The app uses 90 days for EU, Swiss, Norwegian, British, US, Australian, New Zealand, Japanese and South Korean passports, and 30 days for others. The days on your pass are what count.",
+        "Some passports need a visa before travelling. Submit the SG Arrival Card before you arrive."
+      ],
+      "sources": ["https://www.ica.gov.sg/enter-transit-depart/entering-singapore/visa_requirements"]
+    },
+    {
+      "id": "sg-183-days",
+      "category": "tax",
+      "kind": "taxYear",
+      "label": "Tax resident from 183 days in a calendar year",
+      "threshold": 183,
+      "yearStart": "01-01",
+      "counting": "anyPartOfDay",
+      "notes": [
+        "You're a Singapore tax resident for a year if you stay or work there for 183 days or more in that calendar year. Weekends and holidays count.",
+        "If your job in Singapore spans two calendar years and your stay totals 183 days or more, you can be resident for both years (the two-year concession). This doesn't apply to company directors, public entertainers or professionals such as consultants.",
+        "Singapore taxes income earned in Singapore. Foreign income received there is generally not taxed for individuals."
+      ],
+      "sources": [
+        "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/working-out-my-tax-residency"
+      ]
+    }
+  ]
+}

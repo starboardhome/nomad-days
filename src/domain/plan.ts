@@ -6,7 +6,7 @@
  * - Real counts (dashboard, reminders) ignore planned trips until you confirm them.
  */
 import type { Jurisdiction, Rule, RuleOf } from '../rules/schema';
-import { applicability, type Profile } from './applicability';
+import { applicability, forTraveller, type Profile } from './applicability';
 import { toDayNum, toISO, range, type DayNum, type ISODate } from './days';
 import { evaluateRule } from './evaluate';
 import { visitEnd } from './evaluators/perVisit';
@@ -101,7 +101,8 @@ export const checkPlannedTrip = (
   const taxAfter: TaxAfter[] = [];
 
   for (const j of relevant) {
-    for (const rule of j.rules) {
+    for (const general of j.rules) {
+      const rule = forTraveller(general, profile);
       const a = applicability(rule, j, profile);
       if (a === 'visaRequired') visaNeeded.add(j.name);
       if (a !== 'applies') continue;
@@ -111,13 +112,16 @@ export const checkPlannedTrip = (
       const first = range(entry, exit).find((d) => breachedOn(rule, p, d));
       if (first !== undefined) {
         issues.push({ ruleId: rule.id, jurisdiction: j.name, rule: rule.label, category: rule.category, on: toISO(first) });
-      } else if (rule.kind === 'rolling' || rule.kind === 'perVisit') {
+      } else if (rule.category === 'entry' && (rule.kind === 'rolling' || rule.kind === 'perVisit')) {
         const days = margin(rule, p, exit);
         if (!spare || days < spare.days) spare = { days, jurisdiction: j.name };
       } else {
         // As of the day after the trip: days already counted, including the trip
         const after = evaluateRule(rule, p, exit + 1);
-        const daysLeft = Math.max(0, Math.ceil(after.limit - after.used - 1e-9) - 1); // reaching the limit = resident
+        const daysLeft =
+          rule.kind === 'rolling'
+            ? consecutiveAllowance(p, rule, exit + 1) // a rolling test is only broken by going over it (NZ: more than 183 days)
+            : Math.max(0, Math.ceil(after.limit - after.used - 1e-9) - 1); // reaching the limit = resident
         taxAfter.push({ ruleId: rule.id, jurisdiction: j.name, used: after.used, limit: after.limit, daysLeft, resetsOn: after.resetsOn });
       }
     }
